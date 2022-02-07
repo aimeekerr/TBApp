@@ -17,6 +17,7 @@ function LoginScreen(props) {
                     <TextInput
                         style={styles.inputs}
                         placeholder="Password"
+                        secureTextEntry={true}
                     />
                 </View>
                 <Button color="#b1d8b7" title="Login"></Button>
