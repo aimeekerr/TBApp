@@ -1,7 +1,15 @@
-import { React } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput } from 'react-native';
+import { React, useState } from 'react';
+import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
+import VolunteerScreen from './VolunteerScreen';
 
-function LoginScreen(props) {
+export default function LoginScreen() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    loginPress = () => {
+        console.log(email);
+        console.log(password);
+    } 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
@@ -13,14 +21,21 @@ function LoginScreen(props) {
                     <TextInput
                         style={styles.inputs}
                         placeholder="Email"
+                        placeholderTextColor="black"
+                        onChangeText={(email) => setEmail(email)}
                     />
                     <TextInput
                         style={styles.inputs}
                         placeholder="Password"
+                        placeholderTextColor="black"
+                        onChangeText={(password) => setPassword(password)}
                         secureTextEntry={true}
                     />
                 </View>
-                <Button color="#b1d8b7" title="Login"></Button>
+                <Button color="#b1d8b7" title="Login" onPress={loginPress}></Button>
+                <TouchableOpacity style={styles.forgotPassword}>
+                    <Text>Forgot Password?</Text>
+                </TouchableOpacity>
             </View>
         </ImageBackground>
     );
@@ -60,7 +75,9 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 20,
         fontFamily: "sans-serif",
-    }
+    },
+    forgotPassword: {
+        alignItems: "center",
+        top: 20,
+    },
 })
-
-export default LoginScreen;
