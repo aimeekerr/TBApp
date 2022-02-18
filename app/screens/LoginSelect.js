@@ -1,7 +1,11 @@
 import { React } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoginScreen from './LoginScreen';
+import VolunteerScreen from './VolunteerScreen';
 
-export default function LoginSelect() {
+function LoginSelect( {navigation} ) {
     selectLogin = (selection) => {
         console.log(selection);
     }
@@ -13,7 +17,7 @@ export default function LoginSelect() {
             </View>
             <View style={styles.buttonView}>
                 <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Volunteer" onPress={() => this.selectLogin("V")}></Button>
+                    <Button color="#b1d8b7" title="Volunteer" onPress={() => navigation.navigate('LoginScreen')}></Button>
                 </View>
                 <View style={styles.buttons}>
                     <Button color="#b1d8b7" title="Clinic" onPress={() => this.selectLogin("C")}></Button>
@@ -24,6 +28,20 @@ export default function LoginSelect() {
             </View>
         </ImageBackground>
     );
+}
+
+const Stack = createNativeStackNavigator();
+
+function NavStack() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={LoginSelect} />
+        <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name="VScreen" component={VolunteerScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -51,3 +69,5 @@ const styles = StyleSheet.create({
         top: "50%",
     },
 })
+
+export default NavStack;

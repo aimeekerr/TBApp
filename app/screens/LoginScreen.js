@@ -1,14 +1,14 @@
 import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
-import VolunteerScreen from './VolunteerScreen';
 
-export default function LoginScreen() {
+export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     loginPress = () => {
         console.log(email);
         console.log(password);
+        navigation.navigate('VScreen');
     } 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>

@@ -1,11 +1,11 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 function VolunteerScreen(props) {
     return (
-        <div>
+        <View>
             <Text>Volunteer logged in</Text>
-        </div>
+        </View>
     );
 }
 
