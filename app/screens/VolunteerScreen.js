@@ -1,65 +1,31 @@
-import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
- 
-export default function VolunteerScreen( {navigation} ) {
-   const [age, setAge] = useState(0);
-   const [sex, setSex] = useState('');
-   const [region, setRegion] = useState('');
+import { React } from 'react';
+import { ImageBackground, View, StyleSheet, Image, Text, Button } from 'react-native';
 
-   return (
-       <View>
-           <Text style={styles.main}>
-               Please Enter the Patient's Information
-           </Text>
-           <TextInput
-               placeholder="Age"
-               style={styles.text_input_fields}
-               onChangeText={newAge => setAge(newAge)}
-           />
-           <TextInput
-               placeholder="Sex"
-               style={styles.text_input_fields}
-               onChangeText={newSex => setSex(newSex)}
-           />
-           <TextInput
-               placeholder="Region"
-               style={styles.text_input_fields}
-               onChangeText={newRegion => setRegion(newRegion)}
-           />
- 
-           <Button
-               title="Next"
-               color='#b1d8b7'
-               onPress={() => {
-                    navigation.navigate('SymptomsScreen', {age: age, sex: sex, region: region});
-               }}
-           />
-       </View>
-   );
+export default function VolunteerScreen( {navigation} ) {
+    return (
+        <ImageBackground style={styles.background} source={require("../assets/background.png")}>
+            <View style={styles.buttonView}>
+                <View style={styles.buttons}>
+                    <Button color="#b1d8b7" title="Add Patient Data" onPress={() => navigation.navigate('PatientInfo')}></Button>
+                </View>
+                <View style={styles.buttons}>
+                    <Button color="#b1d8b7" title="Tutorial" onPress={() => this.selectLogin("C")}></Button>
+                </View>
+            </View>
+        </ImageBackground>
+    );
 }
- 
+
 const styles = StyleSheet.create({
-   background: {
-       flex: 1,
-       justifyContent: 'flex-end',
-       alignItems: 'center',
-   },
-   main: {
-       backgroundColor: "#85CBB5",
-       textAlign: "center",
-       padding: 15,
-       margin: 10
-   },
-   text_input_fields: {
-       backgroundColor: "#D6E2E0",
-       textAlign: "center",
-       padding: 15,
-       margin: 10
-   },
-   button: {
-       backgroundColor: "#7094E0",
-       textAlign: "center",
-       justifyContent: "center"
-   }
+    background: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    buttons: {
+        margin: 20,
+        width: 200,
+    },
+    buttonView: {
+        top: "30%",
+    },
 })
- 

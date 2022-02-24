@@ -3,9 +3,10 @@ import { ImageBackground, View, StyleSheet, Image, Text, Button } from 'react-na
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './LoginScreen';
-import VolunteerScreen from './VolunteerScreen';
+import PatientInfo from './PatientInfo';
 import SymptomsScreen from './SymptomsScreen';
 import UploadCough from './UploadCough';
+import VolunteerScreen from './VolunteerScreen';
 
 function LoginSelect( {navigation} ) {
     selectLogin = (selection) => {
@@ -40,9 +41,10 @@ function NavStack() {
       <Stack.Navigator>
         <Stack.Screen name="Login" component={LoginSelect} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="VScreen" component={VolunteerScreen} />
+        <Stack.Screen name="PatientInfo" component={PatientInfo} />
         <Stack.Screen name="SymptomsScreen" component={SymptomsScreen} />
         <Stack.Screen name="UploadCough" component={UploadCough} />
+        <Stack.Screen name="VolunteerScreen" component={VolunteerScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -15,23 +15,23 @@ export default function SymptomsScreen( {route, navigation} ) {
    const [fever, setFever] = useState(false)
    const [painWithBreathing, setPainWithBreathing] = useState(false)
 
-    onChangeCoughBlood = () => {
+    const onChangeCoughBlood = () => {
         setCoughBlood(!coughBlood);
     }
 
-    onChangeChestPain = () => {
+    const onChangeChestPain = () => {
         setChestPain(!chestPain);
     }
 
-    onChangeFatigue = () => {
+    const onChangeFatigue = () => {
         setFatigue(!fatigue);
     }
 
-    onChangeFever = () => {
+    const onChangeFever = () => {
         setFever(!fever);
     }
 
-    onChangePainWithBreathing = () => {
+    const onChangePainWithBreathing = () => {
         setPainWithBreathing(!painWithBreathing);
     }
 
@@ -40,7 +40,6 @@ export default function SymptomsScreen( {route, navigation} ) {
            <Text style={styles.text_input}>
                Check all symptoms which apply to the patient:
            </Text>
- 
            <View>
                <View style={styles.checkbox_container}>
                     <Checkbox

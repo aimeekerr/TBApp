@@ -8,7 +8,7 @@ export default function LoginScreen( {navigation} ) {
     loginPress = () => {
         console.log(email);
         console.log(password);
-        navigation.navigate('VScreen');
+        navigation.navigate('VolunteerScreen');
     } 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
