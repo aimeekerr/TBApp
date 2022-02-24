@@ -25,7 +25,7 @@ export default function UploadCough( {route, navigation} ) {
             "key": "12345678", 
             "date": "12345678"
         },
-        body: JSON.stringify({ name: "Baaaaaaaa", gender: "sheep" }),
+        body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString() }),
     };
     const getData = async () => {
         try {
