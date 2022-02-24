@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, ImageBackground } from 'react-native';
  
 export default function PatientInfo ( {navigation} ) {
    const [age, setAge] = useState(0);
@@ -7,6 +7,7 @@ export default function PatientInfo ( {navigation} ) {
    const [region, setRegion] = useState('');
 
    return (
+    <ImageBackground style={styles.background} source={require("../assets/background.png")}>
        <View>
            <Text style={styles.main}>
                Please Enter the Patient's Information
@@ -35,26 +36,28 @@ export default function PatientInfo ( {navigation} ) {
                }}
            />
        </View>
+       </ImageBackground>
    );
 }
  
 const styles = StyleSheet.create({
    background: {
        flex: 1,
-       justifyContent: 'flex-end',
        alignItems: 'center',
    },
    main: {
-       backgroundColor: "#85CBB5",
        textAlign: "center",
        padding: 15,
-       margin: 10
+       margin: 10,
+       color: "black",
+       fontSize: 20,
+        fontFamily: "sans-serif",
    },
    text_input_fields: {
-       backgroundColor: "#D6E2E0",
+       backgroundColor: "white",
        textAlign: "center",
        padding: 15,
-       margin: 10
+       margin: 10,
    },
    button: {
        backgroundColor: "#7094E0",

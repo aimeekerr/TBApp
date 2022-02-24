@@ -1,5 +1,5 @@
 import { React, useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, ImageBackground } from 'react-native';
 import Checkbox from 'expo-checkbox';
 
 export default function SymptomsScreen( {route, navigation} ) {
@@ -36,6 +36,7 @@ export default function SymptomsScreen( {route, navigation} ) {
     }
 
    return (
+    <ImageBackground style={styles.background} source={require("../assets/background.png")}>
        <View>
            <Text style={styles.text_input}>
                Check all symptoms which apply to the patient:
@@ -110,11 +111,13 @@ export default function SymptomsScreen( {route, navigation} ) {
                }
            />
        </View>
+       </ImageBackground>
    )
 }
 
 const styles = StyleSheet.create({
     background: {
+        flex: 1,
         alignItems: 'center',
     },
     checkbox: {
