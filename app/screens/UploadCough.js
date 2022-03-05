@@ -29,7 +29,7 @@ export default function UploadCough( {route, navigation} ) {
     };
     const getData = async () => {
         try {
-            await fetch('http://3.15.172.132:80/db/appdb/med/users/0', request);
+            await fetch('http://18.117.135.128/db/appdb/med/users/0', request);
         } catch (error) {
             console.error(error);
         } finally {
@@ -123,7 +123,8 @@ const styles = StyleSheet.create({
         marginLeft: 5
     },
     text: {
-        backgroundColor: "#85CBB5",
+        fontSize: 20,
+        fontFamily: "sans-serif",
         textAlign: "center",
         padding: 10,
         margin: 10

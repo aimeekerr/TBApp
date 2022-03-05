@@ -141,7 +141,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     text_input: {
-        backgroundColor: "#85CBB5",
+        fontSize: 20,
+        fontFamily: "sans-serif",
         textAlign: "center",
         padding: 10,
         margin: 10
