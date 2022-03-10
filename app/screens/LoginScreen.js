@@ -1,14 +1,35 @@
 import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
+import * as Google from 'expo-google-app-auth';
+//import * as Google from 'expo-auth-session/providers/google';
 
 export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    loginPress = () => {
+    const signInAsync = async() => {
+        console.log("Login Screen");
+        try {
+            const { type, accessToken, user } = await Google.logInAsync({
+                androidClientId: `382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com`,
+                scopes: ["profile", "email"],
+                redirectUrl: "com.android.ekifubatest:/",
+            });
+            console.log(type);
+
+            if (type === "success") {
+                console.log("Success logging in", user);
+            }
+        } catch (error) {
+            console.log("Error with logging in", error);
+        }
+    };
+
+    const loginPress = () => {
         console.log(email);
         console.log(password);
-        navigation.navigate('VolunteerScreen');
+        // navigation.navigate('VolunteerScreen');
+        signInAsync();
     } 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
