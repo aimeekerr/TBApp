@@ -1,6 +1,7 @@
 import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
 import * as Google from 'expo-google-app-auth';
+import { FontAwesome5 } from '@expo/vector-icons';
 //import * as Google from 'expo-auth-session/providers/google';
 
 export default function LoginScreen( {navigation} ) {
@@ -20,6 +21,8 @@ export default function LoginScreen( {navigation} ) {
             if (type === "success") {
                 console.log("Success logging in", user);
             }
+
+            //send the user's token to the backend to verify integrity
         } catch (error) {
             console.log("Error with logging in", error);
         }
@@ -28,8 +31,7 @@ export default function LoginScreen( {navigation} ) {
     const loginPress = () => {
         console.log(email);
         console.log(password);
-        // navigation.navigate('VolunteerScreen');
-        signInAsync();
+        navigation.navigate('VolunteerScreen');
     } 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
@@ -54,6 +56,9 @@ export default function LoginScreen( {navigation} ) {
                     />
                 </View>
                 <Button color="#b1d8b7" title="Login" onPress={loginPress}></Button>
+                <FontAwesome5.Button style={styles.googleButton} backgroundColor="white" name="google" color="green" onPress={signInAsync}>
+                <Text style={styles.googleText}>Log In With Google</Text>
+                </FontAwesome5.Button>
                 <TouchableOpacity style={styles.forgotPassword}>
                     <Text>Forgot Password?</Text>
                 </TouchableOpacity>
