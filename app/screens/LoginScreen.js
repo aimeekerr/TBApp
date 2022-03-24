@@ -1,8 +1,7 @@
 import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
-import * as Google from 'expo-google-app-auth';
+import { authorize } from 'react-native-app-auth';
 import { FontAwesome5 } from '@expo/vector-icons';
-//import * as Google from 'expo-auth-session/providers/google';
 
 export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
@@ -10,19 +9,18 @@ export default function LoginScreen( {navigation} ) {
 
     const signInAsync = async() => {
         console.log("Login Screen");
+
+        const config = {
+            issuer: 'https://accounts.google.com',
+            clientId: `382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com`,
+            redirectUrl: "com.android.ekifubatest.auth://",
+            scopes: ["profile", "email"],
+          };
+
         try {
-            const { type, accessToken, user } = await Google.logInAsync({
-                androidClientId: `382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com`,
-                scopes: ["profile", "email"],
-                redirectUrl: "com.android.ekifubatest:/",
-            });
-            console.log(type);
+            const result = await authorize(config);
+            console.log(result);
 
-            if (type === "success") {
-                console.log("Success logging in", user);
-            }
-
-            //send the user's token to the backend to verify integrity
         } catch (error) {
             console.log("Error with logging in", error);
         }
