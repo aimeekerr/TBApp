@@ -1,15 +1,48 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
-import { authorize } from 'react-native-app-auth';
-import { FontAwesome5 } from '@expo/vector-icons';
+import {
+    GoogleSignin,
+    GoogleSigninButton,
+    statusCodes,
+} from 'react-native-google-signin';
+
 
 export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    let tokenId = "";
 
-    // const [userTokenId, setUserTokenId] = useState("");
+    // adding google authentication here
+    const [loggedIn, setloggedIn] = useState(false);
+    const [userInfo, setuserInfo] = useState([]);
+    const [tokenId, setTokenId] = useState("");
+
+    const signIn = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const { idToken } = await GoogleSignin.signIn();
+            console.log('Your id token is', idToken);
+            setTokenId(idToken);
+            setloggedIn(true);
+        } catch (error) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                // user cancelled the login flow
+                console.log('Cancel');
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                console.log('Signin in progress');
+                // operation (f.e. sign in) is in progress already
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                console.log('PLAY_SERVICES_NOT_AVAILABLE');
+                // play services not available or outdated
+            } else {
+                // some other error happened
+                console.log(error);
+            }
+        } finally {
+            getInfo();
+        }
+    };
+
 
     const request = {
         method: 'PATCH',
@@ -18,49 +51,51 @@ export default function LoginScreen( {navigation} ) {
             "key": "12345678", 
             "date": "12345678"
         },
-        // change the body to include the token
+
+        // change the body to include the token?
         body: JSON.stringify({ "hello": "hello1"}),
     };
-    // /auth/<string:database>/<string:collection>/<string:token> 
-    // /auth/appdb/med/token
+
 
     const getInfo = async () => {
         try {
             await fetch(`http://18.188.94.81/auth/appdb/med/${tokenId}`, request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
-            
         } catch (error) {
-            console.error(error);
+            console.error("The error is", error);
         } finally {
-            console.log(tokenId);
-            tokenId = "";
+            setTokenId("");
             // if the user is actually in the database -> navigate to the patient info screen
             navigation.navigate('VolunteerScreen');
         }
     }
 
-    const signInAsync = async() => {
-        console.log("Login Screen");
-
-        const config = {
-            issuer: 'https://accounts.google.com',
-            clientId: `382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com`,
-            redirectUrl: "com.android.ekifubatest.auth:/",
-            scopes: ["profile", "email"],
-          };
-
+    const signOut = async () => {
         try {
-            const result = await authorize(config);
-            tokenId = result['idToken'];
+            await GoogleSignin.revokeAccess();
+            await GoogleSignin.signOut();
+            setloggedIn(false);
+            setuserInfo([]);
         } catch (error) {
-            console.log("Error with logging in", error);
+            console.error(error);
         }
     };
+      
+    useEffect(() => {
+        GoogleSignin.configure({
+          scopes: ['profile', 'email'], // what API you want to access on behalf of the user, default is email and profile
+          webClientId: '382563850622-mlmd0etlerlhivr31sdcuqq3ccdfg2dk.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+          androidClientId:
+            '382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com', 
+        });
+    }, []);
+
 
     const loginPress = () => {
         console.log(email);
         console.log(password);
         navigation.navigate('VolunteerScreen');
     } 
+
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
@@ -84,10 +119,24 @@ export default function LoginScreen( {navigation} ) {
                     />
                 </View>
                 <Button color="#b1d8b7" title="Login" onPress={loginPress}></Button>
-                <FontAwesome5.Button style={styles.googleButton} backgroundColor="white" name="google" color="green" onPress={signInAsync}>
-                <Text style={styles.googleText}>Log In With Google</Text>
-                </FontAwesome5.Button>
-                <Button color="#b1d8b7" title="After" onPress={getInfo}></Button>
+
+                <View>
+                <GoogleSigninButton
+                    style={styles.googleButton}
+                    size={GoogleSigninButton.Size.Wide}
+                    color={GoogleSigninButton.Color.Light}
+                    onPress={signIn}
+                />
+                </View>
+
+                <View>
+                    <Button
+                    onPress={signOut}
+                    title="LogOut"
+                    color="red"></Button>
+                </View>
+
+
                 <TouchableOpacity style={styles.forgotPassword}>
                     <Text>Forgot Password?</Text>
                 </TouchableOpacity>
@@ -107,8 +156,10 @@ const styles = StyleSheet.create({
         height: 160,
         bottom: 60,
     },
+    googleButton: {
+    },
     inputsView: {
-        bottom: 20,
+        alignSelf: "center",
     },
     inputs: {
         backgroundColor: "white",

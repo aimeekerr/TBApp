@@ -18,7 +18,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.android.ekifubatest"
+      "bundleIdentifier": "com.ios.ekifubatest"
     },
     "android": {
       "adaptiveIcon": {

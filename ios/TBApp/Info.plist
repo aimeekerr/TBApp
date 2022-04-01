@@ -25,7 +25,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.android.ekifubatest</string>
+          <string>com.ios.ekifubatest</string>
         </array>
       </dict>
     </array>
