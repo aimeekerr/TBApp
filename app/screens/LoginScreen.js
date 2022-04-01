@@ -15,15 +15,15 @@ export default function LoginScreen( {navigation} ) {
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
-    const [tokenId, setTokenId] = useState("");
+    let tokenId = "";
 
     const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
             const { idToken } = await GoogleSignin.signIn();
             console.log('Your id token is', idToken);
-            setTokenId(idToken);
             setloggedIn(true);
+            getInfo(idToken);
         } catch (error) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
                 // user cancelled the login flow
@@ -38,32 +38,26 @@ export default function LoginScreen( {navigation} ) {
                 // some other error happened
                 console.log(error);
             }
-        } finally {
-            getInfo();
         }
     };
 
 
-    const request = {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            "key": "12345678", 
-            "date": "12345678"
-        },
-
-        // change the body to include the token?
-        body: JSON.stringify({ "hello": "hello1"}),
-    };
-
-
-    const getInfo = async () => {
+    const getInfo = async (idToken) => {
+        const request = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                "key": "12345678", 
+                "date": "12345678"
+            },
+            body: JSON.stringify({token: idToken}),
+        };
         try {
-            await fetch(`http://18.188.94.81/auth/appdb/med/${tokenId}`, request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+            console.log("token id value:", idToken);
+            await fetch('http://18.188.94.81/auth/appdb/med/1234', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
         } catch (error) {
             console.error("The error is", error);
         } finally {
-            setTokenId("");
             // if the user is actually in the database -> navigate to the patient info screen
             navigation.navigate('VolunteerScreen');
         }
