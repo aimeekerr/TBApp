@@ -6,9 +6,11 @@ import {
     statusCodes,
 } from 'react-native-google-signin';
 
+
 export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
 
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
@@ -41,6 +43,7 @@ export default function LoginScreen( {navigation} ) {
         }
     };
 
+
     const request = {
         method: 'PATCH',
         headers: {
@@ -48,9 +51,11 @@ export default function LoginScreen( {navigation} ) {
             "key": "12345678", 
             "date": "12345678"
         },
+
         // change the body to include the token?
         body: JSON.stringify({ "hello": "hello1"}),
     };
+
 
     const getInfo = async () => {
         try {
@@ -83,6 +88,7 @@ export default function LoginScreen( {navigation} ) {
             '382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com', 
         });
     }, []);
+
 
     const loginPress = () => {
         console.log(email);
@@ -129,6 +135,7 @@ export default function LoginScreen( {navigation} ) {
                     title="LogOut"
                     color="red"></Button>
                 </View>
+
 
                 <TouchableOpacity style={styles.forgotPassword}>
                     <Text>Forgot Password?</Text>
