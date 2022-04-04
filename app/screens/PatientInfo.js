@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, ImageBackground } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, ImageBackground, Dimensions } from 'react-native';
  
 export default function PatientInfo ( {navigation} ) {
    const [age, setAge] = useState(0);
@@ -47,17 +47,18 @@ const styles = StyleSheet.create({
    },
    main: {
        textAlign: "center",
-       padding: 15,
-       margin: 10,
+       padding: Dimensions.get('window').height / 40,
+       margin: Dimensions.get('window').height / 40,
        color: "black",
-       fontSize: 20,
-        fontFamily: "sans-serif",
+       fontSize: Dimensions.get('window').width / 24,
+       fontFamily: "sans-serif",
    },
    text_input_fields: {
        backgroundColor: "white",
        textAlign: "center",
-       padding: 15,
-       margin: 10,
+       padding: Dimensions.get('window').width / 40,
+       fontSize: Dimensions.get('window').width / 40,
+       margin: Dimensions.get('window').width / 40,
    },
    button: {
        backgroundColor: "#7094E0",
