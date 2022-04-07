@@ -1,5 +1,5 @@
 import { React } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Button } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Button, Dimensions } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './LoginScreen';
@@ -15,8 +15,8 @@ function LoginSelect( {navigation} ) {
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
-                <Image style={styles.logo} source={require("../assets/icon.png")} />
                 <Text style={styles.text}>Hello! Who are you?</Text>
+                <Image style={styles.logo} source={require("../assets/icon.png")} />
             </View>
             <View style={styles.buttonView}>
                 <View style={styles.buttons}>
@@ -56,23 +56,24 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logo: {
-        width: 200,
-        height: 200,
-        position: "absolute",
+        width: Dimensions.get('window').width / 2,
+        height: Dimensions.get('window').width / 2,
     },
     top: {
         position: "absolute",
-        top: 70,
+        alignItems: "center",
+        top: Dimensions.get('window').height / 12,
     },
     text: {
-        fontSize: 20,
+        fontSize: Dimensions.get('window').width / 24,
         fontFamily: "sans-serif",
     },
     buttons: {
-        margin: 10,
+        width: Dimensions.get('window').width / 2,
+        margin: Dimensions.get('window').height / 50,
     },
     buttonView: {
-        top: "50%",
+       top: "55%",
     },
 })
 
