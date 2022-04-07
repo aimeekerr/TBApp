@@ -1,6 +1,16 @@
 import { React, useEffect, useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground } from 'react-native';
 import Checkbox from 'expo-checkbox';
+import AudioRecorderPlayer, {
+    AVEncoderAudioQualityIOSType,
+    AVEncodingOption,
+    AudioEncoderAndroidType,
+    AudioSet,
+    AudioSourceAndroidType,
+} from 'react-native-audio-recorder-player';
+import { PermissionsAndroid } from 'react-native';
+
+const audioRecorderPlayer = new AudioRecorderPlayer();
 
 export default function UploadCough( {route, navigation} ) {
     // retrieve and save variables from previous page
@@ -9,6 +19,16 @@ export default function UploadCough( {route, navigation} ) {
     var region = route.params.region;
     var bool_symptoms = route.params.symptoms;
 
+    
+
+    const [currentRecordState, setCurrentRecordState] = useState({
+        isLoggingIn: false,
+        recordSecs: 0,
+        recordTime: '00:00:00',
+        currentPositionSec: 0,
+        currentDurationSec: 0,
+        playTime: '00:00:00',
+        duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
 
     // state variable that represents whether the patient has tuberculosis
@@ -27,6 +47,8 @@ export default function UploadCough( {route, navigation} ) {
         },
         body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString() }),
     };
+
+
     const getData = async () => {
         try {
             await fetch('http://18.117.135.128/db/appdb/med/users/0', request);
@@ -36,6 +58,98 @@ export default function UploadCough( {route, navigation} ) {
             setModalVisible(true);
         }
     }
+
+    const onStartRecord = async () => {
+        if (Platform.OS === 'android') {
+            try {
+              const grants = await PermissionsAndroid.requestMultiple([
+                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+              ]);
+          
+              console.log('write external stroage', grants);
+          
+              if (
+                grants['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+                  PermissionsAndroid.RESULTS.GRANTED &&
+                grants['android.permission.READ_EXTERNAL_STORAGE'] ===
+                  PermissionsAndroid.RESULTS.GRANTED &&
+                grants['android.permission.RECORD_AUDIO'] ===
+                  PermissionsAndroid.RESULTS.GRANTED
+              ) {
+                console.log('Permissions granted');
+              } else {
+                console.log('All required permissions not granted');
+                return;
+              }
+            } catch (err) {
+              console.warn(err);
+              return;
+            }
+        }
+
+
+        const path = 'file:////data/user/0/com.android.ekifubatest/cache/sound.wav';
+        const audioSet = {
+            AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+            AudioSourceAndroid: AudioSourceAndroidType.MIC,
+            AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+            AVNumberOfChannelsKeyIOS: 2,
+            AVFormatIDKeyIOS: AVEncodingOption.aac,
+        };
+
+        const result = await audioRecorderPlayer.startRecorder();
+        audioRecorderPlayer.addRecordBackListener((e) => {
+            setCurrentRecordState({ ...currentRecordState, 
+            recordSecs: e.currentPosition,
+            recordTime: audioRecorderPlayer.mmssss(
+              Math.floor(e.currentPosition),
+            ),
+          });
+          return;
+        });
+        console.log(result);
+      };
+      
+    const onStopRecord = async () => {
+        const result = await audioRecorderPlayer.stopRecorder();
+        audioRecorderPlayer.removeRecordBackListener();
+        setCurrentRecordState({ ...currentRecordState,
+          recordSecs: 0,
+        });
+        console.log(result);
+      };
+      
+    const onStartPlay = async () => {
+        console.log('onStartPlay');
+        const msg = await audioRecorderPlayer.startPlayer();
+        console.log("The message is", msg);
+        audioRecorderPlayer.addPlayBackListener((e) => {
+            if (e.currentPosition === e.duration) {
+                console.log('finished');
+                audioRecorderPlayer.stopPlayer();
+              }
+            setCurrentRecordState({ ...currentRecordState,
+                currentPositionSec: e.currentPosition,
+                currentDurationSec: e.duration,
+                playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+                duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+            });
+            console.log(e);
+            return;
+        });
+    };
+      
+    const onPausePlay = async () => {
+        await audioRecorderPlayer.pausePlayer();
+    };
+      
+    const onStopPlay = async () => {
+        console.log('onStopPlay');
+        audioRecorderPlayer.stopPlayer();
+        audioRecorderPlayer.removePlayBackListener();
+    };
 
     const onChangeSubmit = () => {
         console.log(`Age: ${age}`);
@@ -54,6 +168,43 @@ export default function UploadCough( {route, navigation} ) {
             <Text style={styles.text}>
                 Please upload an audio file of the patient's cough
             </Text>
+
+            <Text style={styles.recorderText}>
+                {currentRecordState.recordTime}
+            </Text>
+
+            <Button
+               title="Start Recording"
+               color="#b1d8b7"
+               onPress={onStartRecord}
+            />
+            <Button
+               title="Stop Recording"
+               color="#b1d8b7"
+               onPress={onStopRecord}
+            />
+
+            <Text style={styles.recorderText}>
+                {currentRecordState.playTime} / {currentRecordState.duration}
+            </Text>
+
+            <Button
+               title="Start Player"
+               color="#b1d8b7"
+               onPress={onStartPlay}
+            />
+
+            <Button
+               title="Pause"
+               color="#b1d8b7"
+               onPress={onPausePlay}
+            />
+
+            <Button
+               title="Stop Player"
+               color="#b1d8b7"
+               onPress={onStopPlay}
+            />
 
             <Text style={styles.text}>
                 Does the patient have tuberculosis?
@@ -167,4 +318,8 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         textAlign: "center"
       },
+      recorderText: {
+        fontWeight: 'bold',
+        textAlign: "center"
+      }
 })
