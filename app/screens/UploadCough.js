@@ -8,9 +8,7 @@ import AudioRecorderPlayer, {
     AudioSet,
     AudioSourceAndroidType,
 } from 'react-native-audio-recorder-player';
-import AudioRecord from 'react-native-audio-record';
 import { PermissionsAndroid } from 'react-native';
-import { Buffer } from 'buffer';
 import RNFetchBlob from 'rn-fetch-blob'
 
 const audioRecorderPlayer = new AudioRecorderPlayer();

@@ -193,7 +193,7 @@ dependencies {
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
 
     compile project(':react-native-audio-recorder-player')
-    
+
     // If your app supports Android versions before Ice Cream Sandwich (API level 14)
     // All fresco packages should use the same version
     if (isGifEnabled || isWebpEnabled) {
