@@ -8,18 +8,34 @@ import AudioRecorderPlayer, {
     AudioSet,
     AudioSourceAndroidType,
 } from 'react-native-audio-recorder-player';
+import AudioRecord from 'react-native-audio-record';
 import { PermissionsAndroid } from 'react-native';
+import { Buffer } from 'buffer';
+import RNFetchBlob from 'rn-fetch-blob'
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
 export default function UploadCough( {route, navigation} ) {
-    // retrieve and save variables from previous page
+    // retrieve and save variables from previous pages
+    // var timestamp = route.params.timestamp;
+    // var token_id = route.params.token_id;
     var age = route.params.age;
     var sex = route.params.sex;
     var region = route.params.region;
     var bool_symptoms = route.params.symptoms;
 
-    
+    const dirs = RNFetchBlob.fs.dirs;
+    const path = Platform.select({
+        ios: 'hello.m4a',
+        android: `${dirs.CacheDir}/hello.wav`,
+    });
+    const audioSet = {
+        AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+        AudioSourceAndroid: AudioSourceAndroidType.MIC,
+        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+        AVNumberOfChannelsKeyIOS: 2,
+        AVFormatIDKeyIOS: AVEncodingOption.aac,
+    };
 
     const [currentRecordState, setCurrentRecordState] = useState({
         isLoggingIn: false,
@@ -48,7 +64,6 @@ export default function UploadCough( {route, navigation} ) {
         body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString() }),
     };
 
-
     const getData = async () => {
         try {
             await fetch('http://18.117.135.128/db/appdb/med/users/0', request);
@@ -58,6 +73,8 @@ export default function UploadCough( {route, navigation} ) {
             setModalVisible(true);
         }
     }
+
+    // function to send audio recording to backend
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -89,17 +106,7 @@ export default function UploadCough( {route, navigation} ) {
             }
         }
 
-
-        const path = 'file:////data/user/0/com.android.ekifubatest/cache/sound.wav';
-        const audioSet = {
-            AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
-            AudioSourceAndroid: AudioSourceAndroidType.MIC,
-            AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
-            AVNumberOfChannelsKeyIOS: 2,
-            AVFormatIDKeyIOS: AVEncodingOption.aac,
-        };
-
-        const result = await audioRecorderPlayer.startRecorder();
+        const result = await audioRecorderPlayer.startRecorder(path, audioSet, false);
         audioRecorderPlayer.addRecordBackListener((e) => {
             setCurrentRecordState({ ...currentRecordState, 
             recordSecs: e.currentPosition,
@@ -113,7 +120,7 @@ export default function UploadCough( {route, navigation} ) {
       };
       
     const onStopRecord = async () => {
-        const result = await audioRecorderPlayer.stopRecorder();
+        let result = await audioRecorderPlayer.stopRecorder();
         audioRecorderPlayer.removeRecordBackListener();
         setCurrentRecordState({ ...currentRecordState,
           recordSecs: 0,
@@ -123,13 +130,14 @@ export default function UploadCough( {route, navigation} ) {
       
     const onStartPlay = async () => {
         console.log('onStartPlay');
-        const msg = await audioRecorderPlayer.startPlayer();
+        const msg = await audioRecorderPlayer.startPlayer(path);
         console.log("The message is", msg);
+        audioRecorderPlayer.setVolume(1.0);
         audioRecorderPlayer.addPlayBackListener((e) => {
             if (e.currentPosition === e.duration) {
                 console.log('finished');
                 audioRecorderPlayer.stopPlayer();
-              }
+            }
             setCurrentRecordState({ ...currentRecordState,
                 currentPositionSec: e.currentPosition,
                 currentDurationSec: e.duration,
