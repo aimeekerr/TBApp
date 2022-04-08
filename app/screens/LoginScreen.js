@@ -6,22 +6,24 @@ import {
     statusCodes,
 } from 'react-native-google-signin';
 
+
 export default function LoginScreen( {navigation} ) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
-    const [tokenId, setTokenId] = useState("");
+    let tokenId = "";
 
     const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
             const { idToken } = await GoogleSignin.signIn();
             console.log('Your id token is', idToken);
-            setTokenId(idToken);
             setloggedIn(true);
+            getInfo(idToken);
         } catch (error) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
                 // user cancelled the login flow
@@ -36,29 +38,26 @@ export default function LoginScreen( {navigation} ) {
                 // some other error happened
                 console.log(error);
             }
-        } finally {
-            getInfo();
         }
     };
 
-    const request = {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            "key": "12345678", 
-            "date": "12345678"
-        },
-        // change the body to include the token?
-        body: JSON.stringify({ "hello": "hello1"}),
-    };
 
-    const getInfo = async () => {
+    const getInfo = async (idToken) => {
+        const request = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                "key": "12345678", 
+                "date": "12345678"
+            },
+            body: JSON.stringify({token: idToken}),
+        };
         try {
-            await fetch(`http://18.188.94.81/auth/appdb/med/${tokenId}`, request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+            console.log("token id value:", idToken);
+            await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
         } catch (error) {
             console.error("The error is", error);
         } finally {
-            setTokenId("");
             // if the user is actually in the database -> navigate to the patient info screen
             navigation.navigate('VolunteerScreen');
         }
@@ -70,6 +69,7 @@ export default function LoginScreen( {navigation} ) {
             await GoogleSignin.signOut();
             setloggedIn(false);
             setuserInfo([]);
+            console.log("logged out");
         } catch (error) {
             console.error(error);
         }
@@ -84,6 +84,7 @@ export default function LoginScreen( {navigation} ) {
         });
     }, []);
 
+
     const loginPress = () => {
         console.log(email);
         console.log(password);
@@ -97,7 +98,7 @@ export default function LoginScreen( {navigation} ) {
                 <Text style={styles.text}>Login to begin!</Text>
             </View>
             <View style={styles.loginButtonView}>
-                <View style={styles.inputsVie}>
+                <View style={styles.inputsView}>
                     <TextInput
                         style={styles.inputs}
                         placeholder="Email"
@@ -126,9 +127,10 @@ export default function LoginScreen( {navigation} ) {
                 <View>
                     <Button
                     onPress={signOut}
-                    title="LogOut"
+                    title="Log Out"
                     color="red"></Button>
                 </View>
+
 
                 <TouchableOpacity style={styles.forgotPassword}>
                     <Text>Forgot Password?</Text>
