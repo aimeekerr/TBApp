@@ -1,5 +1,5 @@
 import { React } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Button } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Button, Dimensions } from 'react-native';
 
 export default function VolunteerScreen( {navigation} ) {
     return (
@@ -22,8 +22,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttons: {
-        margin: 20,
-        width: 200,
+        width: Dimensions.get('window').width / 2,
+        margin: Dimensions.get('window').height / 50,
     },
     buttonView: {
         top: "30%",
