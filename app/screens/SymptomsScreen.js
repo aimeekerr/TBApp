@@ -1,5 +1,5 @@
 import { React, useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, ImageBackground } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, ImageBackground, Dimensions } from 'react-native';
 import Checkbox from 'expo-checkbox';
 
 export default function SymptomsScreen( {route, navigation} ) {
@@ -121,19 +121,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     checkbox: {
-        width: 25, 
-        height: 25,
-        padding: 5,
+        width: Dimensions.get('window').width / 30, 
+        height: Dimensions.get('window').width / 30,
+        padding: Dimensions.get('window').width / 50,
         alignSelf: 'flex-start'
     },
     checkbox_container: {
-        padding: 10,
+        padding: Dimensions.get('window').width / 40,
         flexDirection: 'row',
-        marginLeft: 10
+        marginLeft: Dimensions.get('window').width / 40,
     },
     checkbox_text: {
-        marginBottom: 8,
-        marginLeft: 5,
+        marginBottom: Dimensions.get('window').width / 60,
+        marginLeft: Dimensions.get('window').width / 60,
+        fontSize: Dimensions.get('window').width / 40,
         justifyContent: 'center'
     },
     container: {
@@ -141,10 +142,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     text_input: {
-        fontSize: 20,
+        fontSize: Dimensions.get('window').width / 30,
         fontFamily: "sans-serif",
         textAlign: "center",
-        padding: 10,
-        margin: 10
+        padding: Dimensions.get('window').width / 40,
+        margin: Dimensions.get('window').width / 40
     }
 })
