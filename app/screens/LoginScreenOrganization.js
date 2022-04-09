@@ -7,7 +7,7 @@ import {
 } from 'react-native-google-signin';
 
 
-export default function LoginScreen( {navigation} ) {
+export default function LoginScreenOrganization( {navigation} ) {
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
@@ -50,7 +50,7 @@ export default function LoginScreen( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+            await fetch('http://13.59.212.26/auth/appdb/org', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
         } catch (error) {
             console.error("The error is", error);
         } finally {
@@ -84,7 +84,7 @@ export default function LoginScreen( {navigation} ) {
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
-                <Text style={styles.text}>Hello Volunteer, Login to begin!</Text>
+                <Text style={styles.text}>Hello Organization, Login to begin!</Text>
             </View>
                 <View>
                 <GoogleSigninButton
@@ -93,12 +93,6 @@ export default function LoginScreen( {navigation} ) {
                     color={GoogleSigninButton.Color.Light}
                     onPress={signIn}
                 />
-                </View>
-                <View>
-                    <Button
-                    onPress={signOut}
-                    title="Log Out"
-                    color="red"></Button>
                 </View>
         </ImageBackground>
     );
