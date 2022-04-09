@@ -12,6 +12,9 @@ import LoginScreenOrganization from './LoginScreenOrganization';
 import ClinicScreen from './ClinicScreen';
 import AddVolunteer from './AddVolunteer';
 import RemoveVolunteer from './RemoveVolunteer';
+import OrganizationScreen from './OrganizationScreen';
+import AddClinic from './AddClinic';
+import RemoveClinic from './RemoveClinic';
 
 function LoginSelect( {navigation} ) {
     selectLogin = (selection) => {
@@ -55,6 +58,9 @@ function NavStack() {
         <Stack.Screen name="ClinicScreen" component={ClinicScreen} />
         <Stack.Screen name="AddVolunteer" component={AddVolunteer} />
         <Stack.Screen name="RemoveVolunteer" component={RemoveVolunteer} />
+        <Stack.Screen name="OrganizationScreen" component={OrganizationScreen} />
+        <Stack.Screen name="AddClinic" component={AddClinic} />
+        <Stack.Screen name="RemoveClinic" component={RemoveClinic} />
       </Stack.Navigator>
     </NavigationContainer>
   );

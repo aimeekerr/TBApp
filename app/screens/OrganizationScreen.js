@@ -1,16 +1,16 @@
 import { React } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, Dimensions } from 'react-native';
 
-export default function ClinicScreen( {navigation, route} ) {
+export default function OrganizationScreen( {navigation, route} ) {
     //let idToken = route.params.idToken;
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.buttonView}>
                 <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Add Volunteer" onPress={() => navigation.navigate('AddVolunteer',{idToken})}></Button>
+                    <Button color="#b1d8b7" title="Add Clinic" onPress={() => navigation.navigate('AddClinic')}></Button>
                 </View>
                 <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Remove Volunteer" onPress={() => navigation.navigate("RemoveVolunteer",{idToken})}></Button>
+                    <Button color="#b1d8b7" title="Remove Clinic" onPress={() => navigation.navigate("RemoveClinic")}></Button>
                 </View>
             </View>
         </ImageBackground>

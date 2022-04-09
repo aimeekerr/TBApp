@@ -55,7 +55,7 @@ export default function LoginScreenOrganization( {navigation} ) {
             console.error("The error is", error);
         } finally {
             // if the user is actually in the database -> navigate to the patient info screen
-            navigation.navigate('VolunteerScreen');
+            navigation.navigate('OrganizationScreen');
         }
     }
 
