@@ -6,7 +6,6 @@ import {
     statusCodes,
 } from 'react-native-google-signin';
 
-
 export default function LoginScreen( {navigation} ) {
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
@@ -39,7 +38,7 @@ export default function LoginScreen( {navigation} ) {
 
     const getInfo = async (idToken) => {
         const request = {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 "key": "12345678", 

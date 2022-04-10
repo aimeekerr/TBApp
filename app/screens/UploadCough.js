@@ -11,8 +11,12 @@ import AudioRecorderPlayer, {
 import { PermissionsAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import { readFile } from "react-native-fs";
+import AudioRecord from 'react-native-audio-record';
+import { Buffer } from 'buffer';
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
+
+let base64_encoded = "";
 
 export default function UploadCough( {route, navigation} ) {
     // retrieve and save variables from previous pages
@@ -22,89 +26,94 @@ export default function UploadCough( {route, navigation} ) {
     var sex = route.params.sex;
     var region = route.params.region;
     var bool_symptoms = route.params.symptoms;
+    let base64_decoded = "";
 
     const dirs = RNFetchBlob.fs.dirs;
     const path = Platform.select({
-        ios: 'hello.m4a',
-        android: `${dirs.CacheDir}/test.wav`,
+      ios: 'hello.m4a',
+      android: `${dirs.CacheDir}/testing.wav`,
     });
     const audioSet = {
-        AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
-        AudioSourceAndroid: AudioSourceAndroidType.MIC,
-        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
-        AVNumberOfChannelsKeyIOS: 2,
-        AVFormatIDKeyIOS: AVEncodingOption.aac,
+      AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+      AudioSourceAndroid: AudioSourceAndroidType.MIC,
+      AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+      AVNumberOfChannelsKeyIOS: 2,
+      AVFormatIDKeyIOS: AVEncodingOption.aac,
     };
 
     const [currentRecordState, setCurrentRecordState] = useState({
-        isLoggingIn: false,
-        recordSecs: 0,
-        recordTime: '00:00:00',
-        currentPositionSec: 0,
-        currentDurationSec: 0,
-        playTime: '00:00:00',
-        duration: '00:00:00',});
+      isLoggingIn: false,
+      recordSecs: 0,
+      recordTime: '00:00:00',
+      currentPositionSec: 0,
+      currentDurationSec: 0,
+      playTime: '00:00:00',
+      duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
 
     // state variable that represents whether the patient has tuberculosis
     const [tuberculosis, setTuberculosis] = useState(false)
 
     const onChangeTuberculosis = () => {
-        setTuberculosis(!tuberculosis);
+      setTuberculosis(!tuberculosis);
     }
-
-    const newFunc = () => {
-      console.log(readFile(path, 'base64'));
-    }
-
-    const formData = new FormData();
-    formData.append('file', {
-        uri: path,
-        name: 'test.wav',
-        type: 'audio/wav',
-    })
-    // fetch(apiUrl, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'multipart/form-data',
-
-    //     },
-    //     body: formData
-    // }).then(response => {
-    //     console.error(response)
-    // }).catch(err => {
-    //     console.error(err)
-    // })
-
-    // JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: path })
 
     const request = {
-        method: 'PUT',
-        headers: {
-            "Content-Type": 'multipart/form-data',
-            "key": key, 
-            "date": date
-        },
-        files: {
-          'file': {
-            uri: path,
-            name: 'test.wav',
-            type: 'audio/wav',
-          }
-        },
-        body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString() }),
+      method: 'PUT',
+      headers: {
+          "Content-Type": 'application/json',
+          "key": key, 
+          "date": date
+      },
+      files: {
+        "file": base64_encoded
+      },
+      body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
     };
 
-    const getData = async () => {
-        try {
-            console.log("Form data: ", formData)
-            await fetch('http://13.59.212.26/db/appdb/med/users', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
-        } catch (error) {
-            console.error("The error is ", error);
-        } finally {
-            setModalVisible(true);
-        }
+    const print_var = () => {
+      console.log("Variable is ", base64_encoded);
     }
+
+    const getData = async () => {
+      try {
+          base64_encoded = (await readFile(path, 'base64')).toString()
+          console.log("Base 64 encoded", base64_encoded);
+          print_var();
+          await fetch('http://13.59.212.26/db/appdb/med/users', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+      } catch (error) {
+          console.error("The error is ", error);
+      } finally {
+          setModalVisible(true);
+      }
+    }
+
+    const testStartRecord = async () => {
+      base64_encoded = "";
+      base64_decoded = "";
+      const options = {
+        sampleRate: 16000,  // default 44100
+        channels: 1,        // 1 or 2, default 1
+        bitsPerSample: 16,  // 8 or 16, default 16
+        audioSource: 6,     // android only (see below)
+        wavFile: 'testing.wav' // default 'audio.wav'
+      };
+
+      AudioRecord.init(options);
+      console.log('Recording started');
+      AudioRecord.start();
+      AudioRecord.on('data', data => {
+        // base64-encoded audio data chunks
+        base64_encoded += data;
+        base64_decoded += Buffer.from(data, 'base64');
+        console.log(data);
+      });
+    };
+
+    const testStopRecord = async () => {
+      let audioFile = await AudioRecord.stop();
+      console.log(audioFile);
+    };
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -150,56 +159,56 @@ export default function UploadCough( {route, navigation} ) {
       };
       
     const onStopRecord = async () => {
-        let result = await audioRecorderPlayer.stopRecorder();
-        audioRecorderPlayer.removeRecordBackListener();
-        setCurrentRecordState({ ...currentRecordState,
-          recordSecs: 0,
-        });
-        console.log(result);
-      };
+      let result = await audioRecorderPlayer.stopRecorder();
+      audioRecorderPlayer.removeRecordBackListener();
+      setCurrentRecordState({ ...currentRecordState,
+        recordSecs: 0,
+      });
+      console.log(result);
+    };
       
+    // "file:///data/user/0/com.android.ekifubatest/files/testing.wav"
+
     const onStartPlay = async () => {
-        console.log('file:///' + path);
-        console.log(readFile('file:///' + path, 'base64'));
-        console.log('onStartPlay');
-        const msg = await audioRecorderPlayer.startPlayer(path);
-        console.log("The message is", msg);
-        audioRecorderPlayer.setVolume(1.0);
-        audioRecorderPlayer.addPlayBackListener((e) => {
-            if (e.currentPosition === e.duration) {
-                console.log('finished');
-                audioRecorderPlayer.stopPlayer();
-            }
-            setCurrentRecordState({ ...currentRecordState,
-                currentPositionSec: e.currentPosition,
-                currentDurationSec: e.duration,
-                playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
-                duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
-            });
-            console.log(e);
-            return;
-        });
+      // console.log('Base 64 decoded', base64_decoded);
+      console.log('onStartPlay');
+      const msg = await audioRecorderPlayer.startPlayer(path);
+      console.log("The message is", msg);
+      audioRecorderPlayer.setVolume(1.0);
+      audioRecorderPlayer.addPlayBackListener((e) => {
+          if (e.currentPosition === e.duration) {
+              console.log('finished');
+              audioRecorderPlayer.stopPlayer();
+          }
+          setCurrentRecordState({ ...currentRecordState,
+              currentPositionSec: e.currentPosition,
+              currentDurationSec: e.duration,
+              playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+              duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+          });
+          return;
+      });
     };
       
     const onPausePlay = async () => {
-        await audioRecorderPlayer.pausePlayer();
+      await audioRecorderPlayer.pausePlayer();
     };
       
     const onStopPlay = async () => {
-        console.log('onStopPlay');
-        audioRecorderPlayer.stopPlayer();
-        audioRecorderPlayer.removePlayBackListener();
+      console.log('onStopPlay');
+      audioRecorderPlayer.stopPlayer();
+      audioRecorderPlayer.removePlayBackListener();
     };
 
     const onChangeSubmit = () => {
-        console.log(`Age: ${age}`);
-        console.log(`Sex: ${sex}`);
-        console.log(`Region: ${region}`);
-        console.log(`Symptoms: ${bool_symptoms}`);
-        console.log(`Tuberculosis?: ${tuberculosis}`);
-        // Make API call to upload data to the database
-        getData();
-        console.log("loading");
+      console.log(`Age: ${age}`);
+      console.log(`Sex: ${sex}`);
+      console.log(`Region: ${region}`);
+      console.log(`Symptoms: ${bool_symptoms}`);
+      console.log(`Tuberculosis?: ${tuberculosis}`);
+      // Make API call to upload data to the database
+      getData();
+      console.log("loading");
     }
 
     return (
@@ -261,11 +270,21 @@ export default function UploadCough( {route, navigation} ) {
                     Yes
                 </Text>
             </View>
+            <Button
+               title="Test Record"
+               color="#b1d8b7"
+               onPress={testStartRecord}
+            />
+            <Button
+               title="Test Stop"
+               color="#b1d8b7"
+               onPress={testStopRecord}
+            />
 
             <Button
                title="Submit"
                color="#b1d8b7"
-               onPress={newFunc}
+               onPress={getData}
             />
             <Modal
                 animationType="slide"
@@ -281,7 +300,7 @@ export default function UploadCough( {route, navigation} ) {
                     <Text style={styles.modalText}>Patient Information Successfully Uploaded!</Text>
                     <Pressable
                         style={[styles.button, styles.buttonClose]}
-                        onPress={() => navigation.navigate('VolunteerScreen')}
+                        onPress={() => navigation.navigate('VolunteerScreen', {key: key, date: date})}
                     >
                     <Text style={styles.textStyle} >Return to Home</Text>
                     </Pressable>
