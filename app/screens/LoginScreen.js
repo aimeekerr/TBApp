@@ -8,7 +8,6 @@ import {
 
 
 export default function LoginScreen( {navigation} ) {
-    // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
     let tokenId = "";
