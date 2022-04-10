@@ -7,7 +7,7 @@ import {
 } from 'react-native-google-signin';
 
 
-export default function LoginScreen( {navigation} ) {
+export default function LoginScreenClinic( {navigation} ) {
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
@@ -50,12 +50,12 @@ export default function LoginScreen( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
-            let key = response_list[0];
-            let date = response_list[1];
-            navigation.navigate('VolunteerScreen', {key: key, date: date});
+            await fetch('http://13.59.212.26/auth/appdb/clinic', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
         } catch (error) {
             console.error("The error is", error);
+        } finally {
+            // if the user is actually in the database -> navigate to the patient info screen
+            navigation.navigate('ClinicScreen',{ idToken: idToken });
         }
     }
 
@@ -78,15 +78,14 @@ export default function LoginScreen( {navigation} ) {
           androidClientId:
             '382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com', 
         });
-    }, []);
+    }, []); 
 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
-                <Text style={styles.text}>Hello Volunteer, Login to begin!</Text>
+                <Text style={styles.text}>Hello Clinic, Login to begin!</Text>
             </View>
-            <View style={styles.loginButtonView}>
                 <View>
                 <GoogleSigninButton
                     style={styles.googleButton}
@@ -95,13 +94,6 @@ export default function LoginScreen( {navigation} ) {
                     onPress={signIn}
                 />
                 </View>
-                <View>
-                    <Button
-                    onPress={signOut}
-                    title="Log Out"
-                    color="red"></Button>
-                </View>
-            </View>
         </ImageBackground>
     );
 }
@@ -113,7 +105,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     googleButton: {
-        alignSelf: "center"
     },
     logo: {
         width: 200,
