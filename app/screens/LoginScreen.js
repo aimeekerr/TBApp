@@ -8,10 +8,6 @@ import {
 
 
 export default function LoginScreen( {navigation} ) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-
     // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
@@ -54,12 +50,12 @@ export default function LoginScreen( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
+            let key = response_list[0];
+            let date = response_list[1];
+            navigation.navigate('VolunteerScreen', {key: key, date: date});
         } catch (error) {
             console.error("The error is", error);
-        } finally {
-            // if the user is actually in the database -> navigate to the patient info screen
-            navigation.navigate('VolunteerScreen');
         }
     }
 
@@ -84,13 +80,6 @@ export default function LoginScreen( {navigation} ) {
         });
     }, []);
 
-
-    const loginPress = () => {
-        console.log(email);
-        console.log(password);
-        navigation.navigate('VolunteerScreen');
-    } 
-
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
@@ -98,23 +87,6 @@ export default function LoginScreen( {navigation} ) {
                 <Text style={styles.text}>Login to begin!</Text>
             </View>
             <View style={styles.loginButtonView}>
-                <View style={styles.inputsView}>
-                    <TextInput
-                        style={styles.inputs}
-                        placeholder="Email"
-                        placeholderTextColor="black"
-                        onChangeText={(email) => setEmail(email)}
-                    />
-                    <TextInput
-                        style={styles.inputs}
-                        placeholder="Password"
-                        placeholderTextColor="black"
-                        onChangeText={(password) => setPassword(password)}
-                        secureTextEntry={true}
-                    />
-                </View>
-                <Button color="#b1d8b7" title="Login" onPress={loginPress}></Button>
-
                 <View>
                 <GoogleSigninButton
                     style={styles.googleButton}
@@ -130,11 +102,6 @@ export default function LoginScreen( {navigation} ) {
                     title="Log Out"
                     color="red"></Button>
                 </View>
-
-
-                <TouchableOpacity style={styles.forgotPassword}>
-                    <Text>Forgot Password?</Text>
-                </TouchableOpacity>
             </View>
         </ImageBackground>
     );
@@ -152,6 +119,7 @@ const styles = StyleSheet.create({
         bottom: 60,
     },
     googleButton: {
+        alignSelf: "center"
     },
     inputsView: {
         alignSelf: "center",
@@ -176,9 +144,5 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 20,
         fontFamily: "sans-serif",
-    },
-    forgotPassword: {
-        alignItems: "center",
-        top: 20,
-    },
+    }
 })

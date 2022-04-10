@@ -3,7 +3,9 @@ import { Button, StyleSheet, Text, TextInput, View, ImageBackground, Dimensions 
 import Checkbox from 'expo-checkbox';
 
 export default function SymptomsScreen( {route, navigation} ) {
-    // retrieve and save the variables from the previous page
+    // retrieve and save the variables from the previous pages
+    var key = route.params.key;
+    var date = route.params.date;
     var age = route.params.age;
     var sex = route.params.sex;
     var region = route.params.region;
@@ -106,7 +108,7 @@ export default function SymptomsScreen( {route, navigation} ) {
                title="Next"
                color='#b1d8b7'
                onPress={() => {
-                    navigation.navigate('UploadCough', {age: age, sex: sex, region: region, symptoms: [coughBlood, chestPain, fatigue, fever, painWithBreathing]});
+                    navigation.navigate('UploadCough', {key: key, date: date, age: age, sex: sex, region: region, symptoms: [coughBlood, chestPain, fatigue, fever, painWithBreathing]});
                 }
                }
            />

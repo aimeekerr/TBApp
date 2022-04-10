@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, ImageBackground, Dimensions } from 'react-native';
  
-export default function PatientInfo ( {navigation} ) {
-   const [age, setAge] = useState(0);
-   const [sex, setSex] = useState('');
-   const [region, setRegion] = useState('');
+export default function PatientInfo ( {route, navigation} ) {
+    var key = route.params.key;
+    var date = route.params.date;
+    const [age, setAge] = useState(0);
+    const [sex, setSex] = useState('');
+    const [region, setRegion] = useState('');
 
    return (
     <ImageBackground style={styles.background} source={require("../assets/background.png")}>
@@ -32,7 +34,7 @@ export default function PatientInfo ( {navigation} ) {
                title="Next"
                color='#b1d8b7'
                onPress={() => {
-                    navigation.navigate('SymptomsScreen', {age: age, sex: sex, region: region});
+                    navigation.navigate('SymptomsScreen', {key: key, date: date, age: age, sex: sex, region: region});
                }}
            />
        </View>

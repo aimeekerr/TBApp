@@ -9,14 +9,15 @@ import AudioRecorderPlayer, {
     AudioSourceAndroidType,
 } from 'react-native-audio-recorder-player';
 import { PermissionsAndroid } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob'
+import RNFetchBlob from 'rn-fetch-blob';
+import { readFile } from "react-native-fs";
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
 export default function UploadCough( {route, navigation} ) {
     // retrieve and save variables from previous pages
-    // var timestamp = route.params.timestamp;
-    // var token_id = route.params.token_id;
+    var key = route.params.key;
+    var date = route.params.date;
     var age = route.params.age;
     var sex = route.params.sex;
     var region = route.params.region;
@@ -25,7 +26,7 @@ export default function UploadCough( {route, navigation} ) {
     const dirs = RNFetchBlob.fs.dirs;
     const path = Platform.select({
         ios: 'hello.m4a',
-        android: `${dirs.CacheDir}/hello.wav`,
+        android: `${dirs.CacheDir}/test.wav`,
     });
     const audioSet = {
         AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
@@ -52,27 +53,58 @@ export default function UploadCough( {route, navigation} ) {
         setTuberculosis(!tuberculosis);
     }
 
+    const newFunc = () => {
+      console.log(readFile(path, 'base64'));
+    }
+
+    const formData = new FormData();
+    formData.append('file', {
+        uri: path,
+        name: 'test.wav',
+        type: 'audio/wav',
+    })
+    // fetch(apiUrl, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'multipart/form-data',
+
+    //     },
+    //     body: formData
+    // }).then(response => {
+    //     console.error(response)
+    // }).catch(err => {
+    //     console.error(err)
+    // })
+
+    // JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: path })
+
     const request = {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json',
-            "key": "12345678", 
-            "date": "12345678"
+            "Content-Type": 'multipart/form-data',
+            "key": key, 
+            "date": date
+        },
+        files: {
+          'file': {
+            uri: path,
+            name: 'test.wav',
+            type: 'audio/wav',
+          }
         },
         body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString() }),
     };
 
     const getData = async () => {
         try {
-            await fetch('http://18.117.135.128/db/appdb/med/users/0', request);
+            console.log("Form data: ", formData)
+            await fetch('http://13.59.212.26/db/appdb/med/users', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
         } catch (error) {
-            console.error(error);
+            console.error("The error is ", error);
         } finally {
             setModalVisible(true);
         }
     }
-
-    // function to send audio recording to backend
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -127,6 +159,8 @@ export default function UploadCough( {route, navigation} ) {
       };
       
     const onStartPlay = async () => {
+        console.log('file:///' + path);
+        console.log(readFile('file:///' + path, 'base64'));
         console.log('onStartPlay');
         const msg = await audioRecorderPlayer.startPlayer(path);
         console.log("The message is", msg);
@@ -231,7 +265,7 @@ export default function UploadCough( {route, navigation} ) {
             <Button
                title="Submit"
                color="#b1d8b7"
-               onPress={onChangeSubmit}
+               onPress={newFunc}
             />
             <Modal
                 animationType="slide"
