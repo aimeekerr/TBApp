@@ -2,19 +2,20 @@ import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Text, Button, Dimensions, TextInput } from 'react-native';
 
 export default function AddVolunteer( {navigation, route} ) {
-    let idToken = route.params.idToken;
+    let key = route.params.key;
+    let date = route.params.date;
     const [email, setEmail] = useState('');
 
-    const getInfo = async (idToken) => {
+    const getInfo = async () => {
         console.log(email);
         const request = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                "key": "12345678", 
-                "date": "12345678"
+                "key": key, 
+                "date": date
             },
-            body: JSON.stringify({token: idToken, emails: [ email ], fromCollection: clinic, toCollection: med }),
+            body: JSON.stringify({emails: [ email ], fromCollection: clinic, toCollection: med }),
         };
         try {
             console.log("token id value:", idToken);
@@ -23,7 +24,7 @@ export default function AddVolunteer( {navigation, route} ) {
             console.error("The error is", error);
         } finally {
             // if the user is actually in the database -> navigate to the patient info screen
-            navigation.navigate('VolunteerScreen');
+            navigation.navigate('ClinicScreen');
         }
     }
 
