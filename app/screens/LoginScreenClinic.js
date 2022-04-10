@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Button, TextInput, TouchableOpacity } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Alert } from 'react-native';
 import {
     GoogleSignin,
     GoogleSigninButton,
@@ -40,7 +40,7 @@ export default function LoginScreenClinic( {navigation} ) {
 
     const getInfo = async (idToken) => {
         const request = {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 "key": "12345678", 
@@ -50,12 +50,23 @@ export default function LoginScreenClinic( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            await fetch('http://13.59.212.26/auth/appdb/clinic', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
+            console.log(response_list)
+            if(response_list != null)
+            {
+                let key = response_list[0];
+                let date = response_list[1];
+                navigation.navigate('ClinicScreen', {key: key, date: date});
+            }
+            else
+            {
+                Alert.alert(
+                    "Alert",
+                    "Email does not have permission.",
+                )
+            }
         } catch (error) {
             console.error("The error is", error);
-        } finally {
-            // if the user is actually in the database -> navigate to the patient info screen
-            navigation.navigate('ClinicScreen',{ idToken: idToken });
         }
     }
 
