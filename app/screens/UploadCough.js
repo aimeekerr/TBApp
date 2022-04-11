@@ -77,9 +77,19 @@ export default function UploadCough( {route, navigation} ) {
     const getData = async () => {
       try {
           base64_encoded = (await readFile(path, 'base64')).toString()
-          console.log("Base 64 encoded", base64_encoded);
           print_var();
-          await fetch('http://13.59.212.26/db/appdb/med/users', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+          await fetch('http://13.59.212.26/db/appdb/med/users', {
+            method: 'PUT',
+            headers: {
+                "Content-Type": 'application/json',
+                "key": key, 
+                "date": date
+            },
+            files: {
+              "file": base64_encoded
+            },
+            body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+          }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
       } catch (error) {
           console.error("The error is ", error);
       } finally {
