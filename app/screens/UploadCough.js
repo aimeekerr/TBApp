@@ -26,7 +26,6 @@ export default function UploadCough( {route, navigation} ) {
     var sex = route.params.sex;
     var region = route.params.region;
     var bool_symptoms = route.params.symptoms;
-    let base64_decoded = "";
 
     const dirs = RNFetchBlob.fs.dirs;
     const path = Platform.select({
@@ -88,32 +87,30 @@ export default function UploadCough( {route, navigation} ) {
       }
     }
 
-    const testStartRecord = async () => {
-      base64_encoded = "";
-      base64_decoded = "";
-      const options = {
-        sampleRate: 16000,  // default 44100
-        channels: 1,        // 1 or 2, default 1
-        bitsPerSample: 16,  // 8 or 16, default 16
-        audioSource: 6,     // android only (see below)
-        wavFile: 'testing.wav' // default 'audio.wav'
-      };
+    // const testStartRecord = async () => {
+    //   base64_encoded = "";
+    //   const options = {
+    //     sampleRate: 16000,  // default 44100
+    //     channels: 1,        // 1 or 2, default 1
+    //     bitsPerSample: 16,  // 8 or 16, default 16
+    //     audioSource: 6,     // android only (see below)
+    //     wavFile: 'testing.wav' // default 'audio.wav'
+    //   };
 
-      AudioRecord.init(options);
-      console.log('Recording started');
-      AudioRecord.start();
-      AudioRecord.on('data', data => {
-        // base64-encoded audio data chunks
-        base64_encoded += data;
-        base64_decoded += Buffer.from(data, 'base64');
-        console.log(data);
-      });
-    };
+    //   AudioRecord.init(options);
+    //   console.log('Recording started');
+    //   AudioRecord.start();
+    //   AudioRecord.on('data', data => {
+    //     // base64-encoded audio data chunks
+    //     base64_encoded += data;
+    //     console.log(data);
+    //   });
+    // };
 
-    const testStopRecord = async () => {
-      let audioFile = await AudioRecord.stop();
-      console.log(audioFile);
-    };
+    // const testStopRecord = async () => {
+    //   let audioFile = await AudioRecord.stop();
+    //   console.log(audioFile);
+    // };
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -170,7 +167,6 @@ export default function UploadCough( {route, navigation} ) {
     // "file:///data/user/0/com.android.ekifubatest/files/testing.wav"
 
     const onStartPlay = async () => {
-      // console.log('Base 64 decoded', base64_decoded);
       console.log('onStartPlay');
       const msg = await audioRecorderPlayer.startPlayer(path);
       console.log("The message is", msg);
@@ -270,16 +266,6 @@ export default function UploadCough( {route, navigation} ) {
                     Yes
                 </Text>
             </View>
-            <Button
-               title="Test Record"
-               color="#b1d8b7"
-               onPress={testStartRecord}
-            />
-            <Button
-               title="Test Stop"
-               color="#b1d8b7"
-               onPress={testStopRecord}
-            />
 
             <Button
                title="Submit"
