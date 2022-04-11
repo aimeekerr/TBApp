@@ -1,16 +1,18 @@
 import { React } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, Dimensions } from 'react-native';
 
-export default function OrganizationScreen( {navigation, route} ) {
+export default function OrganizationScreen( {route, navigation} ) {
+    let key = route.params.key;
+    let date = route.params.date;
     //let idToken = route.params.idToken;
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.buttonView}>
                 <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Add Clinic" onPress={() => navigation.navigate('AddClinic')}></Button>
+                    <Button color="#b1d8b7" title="Add Clinic" onPress={() => navigation.navigate('AddClinic', {key: key, date:date})}></Button>
                 </View>
                 <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Remove Clinic" onPress={() => navigation.navigate("RemoveClinic")}></Button>
+                    <Button color="#b1d8b7" title="Remove Clinic" onPress={() => navigation.navigate("RemoveClinic", {key: key, date:date})}></Button>
                 </View>
             </View>
         </ImageBackground>

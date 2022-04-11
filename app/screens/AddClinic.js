@@ -1,7 +1,32 @@
 import { React, useState } from 'react';
 import { ImageBackground, View, StyleSheet, Text, Button, Dimensions, TextInput } from 'react-native';
 
-export default function AddClinic( {navigation, route} ) {
+export default function AddClinic( {route, navigation} ) {
+    let key = route.params.key;
+    let date = route.params.date;
+    const [email, setEmail] = useState('');
+
+    const getInfo = async () => {
+        console.log(email);
+        const request = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "key": key, 
+                "date": date
+            },
+            body: JSON.stringify({emails: [ email ], fromCollection: "org", toCollection: "clinic" }),
+        };
+        try {
+            await fetch('http://13.59.212.26/auth/appdb/clinic', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
+        } catch (error) {
+            console.error("The error is", error);
+        } finally {
+            // if the user is actually in the database -> navigate to the patient info screen
+            navigation.navigate('OrganizationScreen', {key: key, date: date});
+        }
+    }
+
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View>
@@ -16,6 +41,7 @@ export default function AddClinic( {navigation, route} ) {
                 <Button
                     title="Submit"
                     color='#b1d8b7'
+                    onPress={getInfo}
                 />
             </View>
         </ImageBackground>
