@@ -15,16 +15,15 @@ export default function AddVolunteer( {navigation, route} ) {
                 "key": key, 
                 "date": date
             },
-            body: JSON.stringify({emails: [ email ], fromCollection: clinic, toCollection: med }),
+            body: JSON.stringify({emails: [ email ], fromCollection: "clinic", toCollection: "med" }),
         };
         try {
-            console.log("token id value:", idToken);
             await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); })
         } catch (error) {
             console.error("The error is", error);
         } finally {
             // if the user is actually in the database -> navigate to the patient info screen
-            navigation.navigate('ClinicScreen');
+            navigation.navigate('ClinicScreen', {key: key, date: date});
         }
     }
 

@@ -8,7 +8,6 @@ import {
 
 
 export default function LoginScreenClinic( {navigation} ) {
-    // adding google authentication here
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
     let tokenId = "";
@@ -50,7 +49,7 @@ export default function LoginScreenClinic( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
+            let response_list = await fetch('http://13.59.212.26/auth/appdb/clinic', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
             console.log(response_list)
             if(response_list != null)
             {
