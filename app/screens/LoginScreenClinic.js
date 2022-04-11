@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Alert } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Modal, Pressable, Alert, Button } from 'react-native';
 import {
     GoogleSignin,
     GoogleSigninButton,
@@ -10,6 +10,7 @@ import {
 export default function LoginScreenClinic( {navigation} ) {
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
+    const [modalVisible, setModalVisible] = useState(false);
     let tokenId = "";
 
     const signIn = async () => {
@@ -59,10 +60,7 @@ export default function LoginScreenClinic( {navigation} ) {
             }
             else
             {
-                Alert.alert(
-                    "Alert",
-                    "Email does not have permission.",
-                )
+                setModalVisible(true);
             }
         } catch (error) {
             console.error("The error is", error);
@@ -104,17 +102,45 @@ export default function LoginScreenClinic( {navigation} ) {
                     onPress={signIn}
                 />
                 </View>
+                <View>
+                    <Button
+                    onPress={signOut}
+                    title="Log Out"
+                    color="red"></Button>
+                </View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                    Alert.alert("Modal has been closed.");
+                    setModalVisible(!modalVisible);
+                }}
+                >
+                    <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Email does not have permissions!</Text>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => setModalVisible(false)}
+                        >
+                        <Text style={styles.textStyle} >Ok</Text>
+                        </Pressable>
+                    </View>
+                    </View>
+                </Modal>
         </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    background: {
+   background: {
         flex: 1,
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
     googleButton: {
+        alignSelf: "center"
     },
     logo: {
         width: 200,
@@ -130,4 +156,46 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: "sans-serif",
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+      },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+      },
+      button: {
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2
+      },
+      buttonClose: {
+        backgroundColor: "#b1d8b7",
+      },
+      textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center"
+      },
+      modalText: {
+        marginBottom: 15,
+        textAlign: "center"
+      },
+      recorderText: {
+        fontWeight: 'bold',
+        textAlign: "center"
+      }
 })
