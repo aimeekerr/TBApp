@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     checkbox: {
-        width: Dimensions.get('window').width / 30, 
-        height: Dimensions.get('window').width / 30,
+        width: Dimensions.get('window').width / 16, 
+        height: Dimensions.get('window').width / 16,
         padding: Dimensions.get('window').width / 50,
         alignSelf: 'flex-start'
     },
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     checkbox_text: {
         marginBottom: Dimensions.get('window').width / 60,
         marginLeft: Dimensions.get('window').width / 60,
-        fontSize: Dimensions.get('window').width / 40,
+        fontSize: Dimensions.get('window').width / 24,
         justifyContent: 'center'
     },
     container: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     text_input: {
-        fontSize: Dimensions.get('window').width / 30,
+        fontSize: Dimensions.get('window').width / 24,
         fontFamily: "sans-serif",
         textAlign: "center",
         padding: Dimensions.get('window').width / 40,
