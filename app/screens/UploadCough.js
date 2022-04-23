@@ -1,4 +1,4 @@
-import { React, useEffect, useState } from 'react';
+import { React, useEffect, useState, useCallback } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AudioRecorderPlayer, {
@@ -10,9 +10,10 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import { PermissionsAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import { readFile } from "react-native-fs";
+import { readFile, copyFile, TemporaryDirectoryPath } from "react-native-fs";
 import AudioRecord from 'react-native-audio-record';
 import { Buffer } from 'buffer';
+import DocumentPicker, { types } from 'react-native-document-picker';
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -49,6 +50,11 @@ export default function UploadCough( {route, navigation} ) {
       playTime: '00:00:00',
       duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
+
+    // variable to hold the file response
+    const [fileResponse, setFileResponse] = useState({});
+
+    const [uploadedAudioUri, setUploadedAudioUri] = useState("");
 
     // state variable that represents whether the patient has tuberculosis
     const [tuberculosis, setTuberculosis] = useState(false)
@@ -96,31 +102,6 @@ export default function UploadCough( {route, navigation} ) {
           setModalVisible(true);
       }
     }
-
-    // const testStartRecord = async () => {
-    //   base64_encoded = "";
-    //   const options = {
-    //     sampleRate: 16000,  // default 44100
-    //     channels: 1,        // 1 or 2, default 1
-    //     bitsPerSample: 16,  // 8 or 16, default 16
-    //     audioSource: 6,     // android only (see below)
-    //     wavFile: 'testing.wav' // default 'audio.wav'
-    //   };
-
-    //   AudioRecord.init(options);
-    //   console.log('Recording started');
-    //   AudioRecord.start();
-    //   AudioRecord.on('data', data => {
-    //     // base64-encoded audio data chunks
-    //     base64_encoded += data;
-    //     console.log(data);
-    //   });
-    // };
-
-    // const testStopRecord = async () => {
-    //   let audioFile = await AudioRecord.stop();
-    //   console.log(audioFile);
-    // };
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -175,6 +156,8 @@ export default function UploadCough( {route, navigation} ) {
     };
       
     // "file:///data/user/0/com.android.ekifubatest/files/testing.wav"
+    // file:///data/user/0/com.android.ekifubatest/cache/42
+    // content://com.android.providers.downloads.documents/document/42
 
     const onStartPlay = async () => {
       console.log('onStartPlay');
@@ -204,6 +187,59 @@ export default function UploadCough( {route, navigation} ) {
       console.log('onStopPlay');
       audioRecorderPlayer.stopPlayer();
       audioRecorderPlayer.removePlayBackListener();
+    };
+
+    //type: [types.wav, types.mp3, types.aac],
+    const handleDocumentSelection = useCallback(async () => {
+      try {
+        const response = await DocumentPicker.pickSingle({
+          presentationStyle: 'fullscreen',
+          type: ['audio/wav', 'audio.mpeg', 'audio/aac'],
+        });
+        setFileResponse(response);
+        setUploadedAudioUri((await get_uri(response.uri)).toString());
+      } catch (error) {
+        console.log(error);
+      }
+    }, []);
+
+    const get_uri = async(url) => {
+      if (url.startsWith('content://')) {
+        console.log('url passed in is', url);
+        const urlComponents = url.split('/')
+        const fileNameAndExtension = urlComponents[urlComponents.length - 1]
+        const destPath = `${TemporaryDirectoryPath}/${fileNameAndExtension}`
+        console.log('destpath', destPath);
+        await copyFile(url, destPath);
+        console.log('dest path is'+  "file://" + destPath.toString());
+        return "file://" + destPath.toString();
+      }
+    }
+
+    const onStartPlayUploadedRecording = async () => {
+      console.log('onStartPlay');
+      console.log('Contents in uploadedAudioUri', uploadedAudioUri);
+      // Object.keys(fileResponse).length > 0
+      if (uploadedAudioUri) {
+        const msg = await audioRecorderPlayer.startPlayer(uploadedAudioUri);
+        console.log("The message is", msg);
+        audioRecorderPlayer.setVolume(1.0);
+        audioRecorderPlayer.addPlayBackListener((e) => {
+            if (e.currentPosition === e.duration) {
+                console.log('finished');
+                audioRecorderPlayer.stopPlayer();
+            }
+            setCurrentRecordState({ ...currentRecordState,
+                currentPositionSec: e.currentPosition,
+                currentDurationSec: e.duration,
+                playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+                duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+            });
+            return;
+        });
+      } else {
+        console.log('NO FILE HAS BEEN SELECTED')
+      }
     };
 
     const onChangeSubmit = () => {
@@ -260,6 +296,28 @@ export default function UploadCough( {route, navigation} ) {
                color="#b1d8b7"
                onPress={onStopPlay}
             />
+
+            <Text style={styles.text}>
+              ------- Or -------
+            </Text>
+
+            <Text style={styles.text}>
+              Upload an audio file of the patient's cough
+            </Text>
+
+            <View>
+              <Button
+                title="Select Audio File"
+                color="#b1d8b7"
+                onPress={handleDocumentSelection}
+              />
+              <Button
+               title="Play Back Audio"
+               color="#b1d8b7"
+               onPress={onStartPlayUploadedRecording}
+            />
+
+            </View>
 
             <Text style={styles.text}>
                 Does the patient have tuberculosis?
@@ -332,7 +390,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: "sans-serif",
         textAlign: "center",
-        padding: 10,
+        padding: 5,
         margin: 10
     },
     centeredView: {
