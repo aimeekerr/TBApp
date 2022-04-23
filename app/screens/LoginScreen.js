@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Button, Modal, Pressable, Alert } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Button, Modal, Pressable, Alert, Dimensions } from 'react-native';
 import {
     GoogleSignin,
     GoogleSigninButton,
@@ -146,30 +146,30 @@ const styles = StyleSheet.create({
         alignSelf: "center"
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: Dimensions.get('window').width / 2,
+        height: Dimensions.get('window').width / 2,
         position: "absolute",
     },
     top: {
         position: "absolute",
-        top: 70,
+        top: Dimensions.get('window').height / 12,
         alignItems: "center",
     },
     text: {
-        fontSize: 20,
+        fontSize: Dimensions.get('window').width / 20,
         fontFamily: "sans-serif",
     },
     centeredView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: Dimensions.get('window').height / 22
       },
     modalView: {
-        margin: 20,
+        margin: Dimensions.get('window').height / 20,
         backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
+        borderRadius: Dimensions.get('window').height / 20,
+        padding: Dimensions.get('window').height / 35,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         textAlign: "center"
       },
       modalText: {
-        marginBottom: 15,
+        marginBottom: Dimensions.get('window').height / 15,
         textAlign: "center"
       },
       recorderText: {

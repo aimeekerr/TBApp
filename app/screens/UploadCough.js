@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useCallback } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground, Dimensions } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AudioRecorderPlayer, {
     AVEncoderAudioQualityIOSType,
@@ -372,32 +372,34 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     checkbox: {
-        width: 25, 
-        height: 25,
-        padding: 5,
-        alignSelf: 'center'
-    },
+      width: Dimensions.get('window').width / 16, 
+      height: Dimensions.get('window').width / 16,
+      padding: Dimensions.get('window').width / 50,
+      alignSelf: 'flex-start'
+  },
     checkbox_container: {
-        padding: 10,
+        padding: Dimensions.get('window').width / 40,
         flexDirection: 'row',
         justifyContent: 'center'
     },
     checkbox_text: {
-        marginBottom: 8,
-        marginLeft: 5
+      marginBottom: Dimensions.get('window').width / 60,
+      marginLeft: Dimensions.get('window').width / 60,
+      fontSize: Dimensions.get('window').width / 24,
+      justifyContent: 'center'
     },
     text: {
-        fontSize: 20,
+        fontSize: Dimensions.get('window').width / 20,
         fontFamily: "sans-serif",
         textAlign: "center",
-        padding: 5,
-        margin: 10
+        padding: Dimensions.get('window').width / 70,
+        margin: Dimensions.get('window').width / 70
     },
     centeredView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: Dimensions.get('window').width / 22
       },
       modalView: {
         margin: 20,
@@ -434,5 +436,5 @@ const styles = StyleSheet.create({
       recorderText: {
         fontWeight: 'bold',
         textAlign: "center"
-      }
+      },
 })

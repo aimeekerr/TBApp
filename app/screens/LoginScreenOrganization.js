@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Modal, Pressable, Alert, Button } from 'react-native';
+import { ImageBackground, View, StyleSheet, Image, Text, Modal, Pressable, Alert, Button, Dimensions } from 'react-native';
 import {
     GoogleSignin,
     GoogleSigninButton,
@@ -95,20 +95,23 @@ export default function LoginScreenOrganization( {navigation} ) {
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
                 <Text style={styles.text}>Hello Organization, Login to begin!</Text>
             </View>
+            <View style={styles.loginButtonView}>
                 <View>
-                    <GoogleSigninButton
-                        style={styles.googleButton}
-                        size={GoogleSigninButton.Size.Wide}
-                        color={GoogleSigninButton.Color.Light}
-                        onPress={signIn}
-                    />
+                <GoogleSigninButton
+                    style={styles.googleButton}
+                    size={GoogleSigninButton.Size.Wide}
+                    color={GoogleSigninButton.Color.Light}
+                    onPress={signIn}
+                />
                 </View>
                 <View>
                     <Button
-                    onPress={signOut}
-                    title="Log Out"
-                    color="red"></Button>
+                        onPress={signOut}
+                        title="Log Out"
+                        color="red">
+                    </Button>
                 </View>
+            </View>
                 <Modal
                     animationType="slide"
                     transparent={true}
@@ -144,24 +147,24 @@ const styles = StyleSheet.create({
         alignSelf: "center"
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: Dimensions.get('window').width / 2,
+        height: Dimensions.get('window').width / 2,
         position: "absolute",
     },
     top: {
         position: "absolute",
-        top: 70,
+        top: Dimensions.get('window').height / 20,
         alignItems: "center",
     },
     text: {
-        fontSize: 20,
+        fontSize: Dimensions.get('window').width / 20,
         fontFamily: "sans-serif",
     },
     centeredView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: Dimensions.get('window').height / 22
       },
     modalView: {
         margin: 20,

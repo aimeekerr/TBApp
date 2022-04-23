@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
        backgroundColor: "white",
        textAlign: "center",
        padding: Dimensions.get('window').width / 40,
-       fontSize: Dimensions.get('window').width / 40,
+       fontSize: Dimensions.get('window').width / 24,
        margin: Dimensions.get('window').width / 40,
    },
    button: {

@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
         top: Dimensions.get('window').height / 12,
     },
     text: {
-        fontSize: Dimensions.get('window').width / 24,
+        fontSize: Dimensions.get('window').width / 20,
         fontFamily: "sans-serif",
     },
     buttons: {

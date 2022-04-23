@@ -122,9 +122,9 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: Dimensions.get('window').width / 22
       },
-    modalView: {
+      modalView: {
         margin: 20,
         backgroundColor: "white",
         borderRadius: 20,
@@ -175,7 +175,11 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         textAlign: "center",
         padding: Dimensions.get('window').width / 40,
-        fontSize: Dimensions.get('window').width / 40,
-        margin: Dimensions.get('window').width / 40,
+       fontSize: Dimensions.get('window').width / 24,
+       margin: Dimensions.get('window').width / 40,
     },
+    email_list: {
+        fontSize: Dimensions.get('window').width / 24,
+        
+    }
 })
