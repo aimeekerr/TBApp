@@ -1,6 +1,5 @@
-import { React, useEffect, useState } from 'react';
+import { React, useEffect, useState, useCallback } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground, Dimensions } from 'react-native';
-import Checkbox from 'expo-checkbox';
 import AudioRecorderPlayer, {
     AVEncoderAudioQualityIOSType,
     AVEncodingOption,
@@ -10,9 +9,12 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import { PermissionsAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import { readFile } from "react-native-fs";
+import { readFile, copyFile, TemporaryDirectoryPath } from "react-native-fs";
 import AudioRecord from 'react-native-audio-record';
 import { Buffer } from 'buffer';
+import Checkbox from 'expo-checkbox';
+import DocumentPicker from 'react-native-document-picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -26,6 +28,16 @@ export default function UploadCough( {route, navigation} ) {
     var sex = route.params.sex;
     var region = route.params.region;
     var bool_symptoms = route.params.symptoms;
+
+    const [recordPathSelected, setRecordPathSelected] = useState(true);
+
+    const [open, setOpen] = useState(false);
+    const [tuberculosis, setTuberculosis] = useState(false);
+    const [items, setItems] = useState([
+      {label: 'Yes', value: true},
+      {label: 'No', value: false}
+    ]);
+
 
     const dirs = RNFetchBlob.fs.dirs;
     const path = Platform.select({
@@ -50,12 +62,10 @@ export default function UploadCough( {route, navigation} ) {
       duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
 
-    // state variable that represents whether the patient has tuberculosis
-    const [tuberculosis, setTuberculosis] = useState(false)
+    // variable to hold the file response
+    const [fileResponse, setFileResponse] = useState({});
 
-    const onChangeTuberculosis = () => {
-      setTuberculosis(!tuberculosis);
-    }
+    const [uploadedAudioUri, setUploadedAudioUri] = useState("");
 
     const request = {
       method: 'PUT',
@@ -72,6 +82,10 @@ export default function UploadCough( {route, navigation} ) {
 
     const print_var = () => {
       console.log("Variable is ", base64_encoded);
+    }
+
+    const changePathSelected = () => {
+      setRecordPathSelected(!recordPathSelected);
     }
 
     const getData = async () => {
@@ -97,30 +111,35 @@ export default function UploadCough( {route, navigation} ) {
       }
     }
 
-    // const testStartRecord = async () => {
-    //   base64_encoded = "";
-    //   const options = {
-    //     sampleRate: 16000,  // default 44100
-    //     channels: 1,        // 1 or 2, default 1
-    //     bitsPerSample: 16,  // 8 or 16, default 16
-    //     audioSource: 6,     // android only (see below)
-    //     wavFile: 'testing.wav' // default 'audio.wav'
-    //   };
-
-    //   AudioRecord.init(options);
-    //   console.log('Recording started');
-    //   AudioRecord.start();
-    //   AudioRecord.on('data', data => {
-    //     // base64-encoded audio data chunks
-    //     base64_encoded += data;
-    //     console.log(data);
-    //   });
-    // };
-
-    // const testStopRecord = async () => {
-    //   let audioFile = await AudioRecord.stop();
-    //   console.log(audioFile);
-    // };
+    //modified postData to include uploaded file
+    const postData = async () => {
+      try {
+          if(recordPathSelected) {
+            var actual_path = path;
+          } else {
+            var actual_path = uploadedAudioUri;
+          }
+          console.log(recordPathSelected);
+          base64_encoded = (await readFile(actual_path, 'base64')).toString()
+          print_var();
+          await fetch('http://13.59.212.26/db/appdb/med/users', {
+            method: 'PUT',
+            headers: {
+                "Content-Type": 'application/json',
+                "key": key, 
+                "date": date
+            },
+            files: {
+              "file": base64_encoded
+            },
+            body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+          }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+      } catch (error) {
+          console.error("The error is ", error);
+      } finally {
+          setModalVisible(true);
+      }
+    }
 
     const onStartRecord = async () => {
         if (Platform.OS === 'android') {
@@ -175,6 +194,8 @@ export default function UploadCough( {route, navigation} ) {
     };
       
     // "file:///data/user/0/com.android.ekifubatest/files/testing.wav"
+    // file:///data/user/0/com.android.ekifubatest/cache/42
+    // content://com.android.providers.downloads.documents/document/42
 
     const onStartPlay = async () => {
       console.log('onStartPlay');
@@ -206,23 +227,76 @@ export default function UploadCough( {route, navigation} ) {
       audioRecorderPlayer.removePlayBackListener();
     };
 
-    const onChangeSubmit = () => {
-      console.log(`Age: ${age}`);
-      console.log(`Sex: ${sex}`);
-      console.log(`Region: ${region}`);
-      console.log(`Symptoms: ${bool_symptoms}`);
-      console.log(`Tuberculosis?: ${tuberculosis}`);
-      // Make API call to upload data to the database
-      getData();
-      console.log("loading");
+    const handleDocumentSelection = useCallback(async () => {
+      try {
+        const response = await DocumentPicker.pickSingle({
+          presentationStyle: 'fullscreen',
+          type: ['audio/wav', 'audio.mpeg', 'audio/aac'],
+        });
+        setFileResponse(response);
+        setUploadedAudioUri((await get_uri(response.uri)).toString());
+      } catch (error) {
+        console.log(error);
+      }
+    }, []);
+
+    const get_uri = async(url) => {
+      if (url.startsWith('content://')) {
+        console.log('url passed in is', url);
+        const urlComponents = url.split('/')
+        const fileNameAndExtension = urlComponents[urlComponents.length - 1]
+        const destPath = `${TemporaryDirectoryPath}/${fileNameAndExtension}`
+        console.log('destpath', destPath);
+        await copyFile(url, destPath);
+        console.log('dest path is'+  "file://" + destPath.toString());
+        return "file://" + destPath.toString();
+      }
     }
+
+    const onStartPlayUploadedRecording = async () => {
+      console.log('onStartPlay');
+      console.log('Contents in uploadedAudioUri', uploadedAudioUri);
+      // Object.keys(fileResponse).length > 0
+      if (uploadedAudioUri) {
+        const msg = await audioRecorderPlayer.startPlayer(uploadedAudioUri);
+        console.log("The message is", msg);
+        audioRecorderPlayer.setVolume(1.0);
+        audioRecorderPlayer.addPlayBackListener((e) => {
+            if (e.currentPosition === e.duration) {
+                console.log('finished');
+                audioRecorderPlayer.stopPlayer();
+            }
+            setCurrentRecordState({ ...currentRecordState,
+                currentPositionSec: e.currentPosition,
+                currentDurationSec: e.duration,
+                playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+                duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+            });
+            return;
+        });
+      } else {
+        // change to some type of alert??
+        console.log('NO FILE HAS BEEN SELECTED')
+      }
+    };
 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
         <View>
             <Text style={styles.text}>
-                Please upload an audio file of the patient's cough
+                Select a method for uploading the patient's cough:
             </Text>
+
+            <View style={styles.checkbox_container}>
+                <Checkbox
+                  value={recordPathSelected}
+                  onValueChange={changePathSelected}
+                  style={styles.checkbox}
+                />
+                <Text style={styles.checkbox_text}>
+                  1) Record the patient's cough here:
+                </Text>
+            </View>
 
             <Text style={styles.recorderText}>
                 {currentRecordState.recordTime}
@@ -262,25 +336,77 @@ export default function UploadCough( {route, navigation} ) {
             />
 
             <Text style={styles.text}>
-                Does the patient have tuberculosis?
+              ------- Or -------
             </Text>
 
             <View style={styles.checkbox_container}>
                 <Checkbox
-                    value={tuberculosis}
-                    onValueChange={onChangeTuberculosis}
-                    style={styles.checkbox}
+                  value={!recordPathSelected}
+                  onValueChange={changePathSelected}
+                  style={styles.checkbox}
                 />
-
                 <Text style={styles.checkbox_text}>
-                    Yes
+                2) Upload an existing audio file:
                 </Text>
             </View>
+
+            <View>
+              <Button
+                title="Select Audio File"
+                color="#b1d8b7"
+                onPress={handleDocumentSelection}
+              />
+              <Button
+               title="Play Back Audio"
+               color="#b1d8b7"
+               onPress={onStartPlayUploadedRecording}
+            />
+
+            </View>
+
+            <Text style={styles.text}>
+                Does the patient have tuberculosis?
+            </Text>
+            
+            <DropDownPicker
+              open={open}
+              value={tuberculosis}
+              items={items}
+              setOpen={setOpen}
+              setValue={setTuberculosis}
+              setItems={setItems}
+              dropDownDirection="AUTO"
+              dropDownContainerStyle={{
+                backgroundColor: "#dfdfdf",
+                fontSize: Dimensions.get('window').width / 24
+              }}
+              containerStyle={{
+                margin: Dimensions.get('window').width / 40,
+              }}
+              labelStyle={{
+                color: "#000000",
+                fontSize: Dimensions.get('window').width / 24
+              }}
+              listItemLabelStyle={{
+                color: "#000000",
+                fontSize: Dimensions.get('window').width / 24
+              }}
+              placeholder="Select whether the patient has tuberculosis"
+              placeholderStyle={{
+                color: "#999999",
+                textAlign: "center",
+                fontSize: Dimensions.get('window').width / 24
+              }}
+            />
+            <Text style={styles.submitButton}>
+
+            </Text>
 
             <Button
                title="Submit"
                color="#b1d8b7"
-               onPress={getData}
+               onPress={postData}
+               style={styles.submitButton}
             />
             <Modal
                 animationType="slide"
@@ -325,17 +451,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     checkbox_text: {
-      marginBottom: Dimensions.get('window').width / 60,
-      marginLeft: Dimensions.get('window').width / 60,
-      fontSize: Dimensions.get('window').width / 24,
-      justifyContent: 'center'
+        marginBottom: Dimensions.get('window').width / 60,
+        marginLeft: Dimensions.get('window').width / 60,
+        fontSize: Dimensions.get('window').width / 24,
+        justifyContent: 'center'
     },
     text: {
         fontSize: Dimensions.get('window').width / 20,
         fontFamily: "sans-serif",
         textAlign: "center",
-        padding: Dimensions.get('window').width / 70,
-        margin: Dimensions.get('window').width / 70
+        padding: Dimensions.get('window').width / 100,
+        margin: Dimensions.get('window').width / 100
     },
     centeredView: {
         flex: 1,
@@ -379,4 +505,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: "center"
       },
+      submitButton: {
+        margin: Dimensions.get('window').height / 100,
+      }
 })
