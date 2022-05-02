@@ -21,6 +21,7 @@
       "bundleIdentifier": "com.ios.ekifubatest"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./app/assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
