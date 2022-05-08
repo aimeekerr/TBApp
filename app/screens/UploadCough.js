@@ -324,12 +324,6 @@ export default function UploadCough( {route, navigation} ) {
             />
 
             <Button
-               title="Pause"
-               color="#b1d8b7"
-               onPress={onPausePlay}
-            />
-
-            <Button
                title="Stop Player"
                color="#b1d8b7"
                onPress={onStopPlay}
@@ -363,6 +357,7 @@ export default function UploadCough( {route, navigation} ) {
             />
 
             </View>
+            <Text style={styles.text}/>
 
             <Text style={styles.text}>
                 Does the patient have tuberculosis?
@@ -375,10 +370,12 @@ export default function UploadCough( {route, navigation} ) {
               setOpen={setOpen}
               setValue={setTuberculosis}
               setItems={setItems}
-              dropDownDirection="AUTO"
+              dropDownDirection="TOP"
               dropDownContainerStyle={{
                 backgroundColor: "#dfdfdf",
-                fontSize: Dimensions.get('window').width / 24
+                fontSize: Dimensions.get('window').width / 24,
+                position: 'absolute',
+                zIndex: 900
               }}
               containerStyle={{
                 margin: Dimensions.get('window').width / 40,
@@ -389,24 +386,29 @@ export default function UploadCough( {route, navigation} ) {
               }}
               listItemLabelStyle={{
                 color: "#000000",
+                fontSize: Dimensions.get('window').width / 24,
+              }}
+              selectedItemLabelStyle={{
+                fontWeight: "bold",
                 fontSize: Dimensions.get('window').width / 24
               }}
+              itemSeparator={true}
+              listMode="SCROLLVIEW"
               placeholder="Select whether the patient has tuberculosis"
               placeholderStyle={{
                 color: "#999999",
                 textAlign: "center",
                 fontSize: Dimensions.get('window').width / 24
               }}
+              zIndex={1}
             />
-            <Text style={styles.submitButton}>
-
-            </Text>
 
             <Button
                title="Submit"
                color="#b1d8b7"
                onPress={postData}
                style={styles.submitButton}
+               zIndex={5}
             />
             <Modal
                 animationType="slide"
@@ -443,12 +445,14 @@ const styles = StyleSheet.create({
       width: Dimensions.get('window').width / 16, 
       height: Dimensions.get('window').width / 16,
       padding: Dimensions.get('window').width / 50,
-      alignSelf: 'flex-start'
+      alignSelf: 'flex-start',
+      position: 'relative',
+      zIndex: 1
   },
     checkbox_container: {
         padding: Dimensions.get('window').width / 40,
         flexDirection: 'row',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     checkbox_text: {
         marginBottom: Dimensions.get('window').width / 60,
@@ -461,51 +465,54 @@ const styles = StyleSheet.create({
         fontFamily: "sans-serif",
         textAlign: "center",
         padding: Dimensions.get('window').width / 100,
-        margin: Dimensions.get('window').width / 100
+        margin: Dimensions.get('window').width / 100,
+        position: 'relative',
+        zIndex: 1
     },
     centeredView: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: Dimensions.get('window').width / 22
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: Dimensions.get('window').width / 22
+    },
+    modalView: {
+      margin: 20,
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 35,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
       },
-      modalView: {
-        margin: 20,
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-      },
-      button: {
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2
-      },
-      buttonClose: {
-        backgroundColor: "#b1d8b7",
-      },
-      textStyle: {
-        color: "white",
-        fontWeight: "bold",
-        textAlign: "center"
-      },
-      modalText: {
-        marginBottom: 15,
-        textAlign: "center"
-      },
-      recorderText: {
-        fontWeight: 'bold',
-        textAlign: "center"
-      },
-      submitButton: {
-        margin: Dimensions.get('window').height / 100,
-      }
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5
+    },
+    button: {
+      borderRadius: 20,
+      padding: 10,
+      elevation: 2
+    },
+    buttonClose: {
+      backgroundColor: "#b1d8b7",
+    },
+    textStyle: {
+      color: "white",
+      fontWeight: "bold",
+      textAlign: "center"
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: "center"
+    },
+    recorderText: {
+      fontWeight: 'bold',
+      textAlign: "center"
+    },
+    submitButton: {
+      position: "absolute",
+      zIndex: 1
+    }
 })

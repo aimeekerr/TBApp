@@ -33,22 +33,25 @@ export default function PatientInfo ( {route, navigation} ) {
               setOpen={setOpen}
               setValue={setSex}
               setItems={setItems}
-              dropDownDirection="BOTTOM"
+              dropDownDirection="TOP"
               disableBorderRadius={true}
               dropDownContainerStyle={{
                 backgroundColor: "#dfdfdf",
-                fontSize: Dimensions.get('window').width / 24
+                fontSize: Dimensions.get('window').width / 24,
+                position: 'absolute',
+                zIndex: 900
               }}
+              itemSeparator={true}
               labelStyle={{
                 color: "#404040",
                 fontSize: Dimensions.get('window').width / 24,
                 textAlign: "center",
                 padding: Dimensions.get('window').width / 70,
-                margin: Dimensions.get('window').width / 70
+                margin: Dimensions.get('window').width / 70,
               }}
               listItemLabelStyle={{
                 color: "#000000",
-                fontSize: Dimensions.get('window').width / 24
+                fontSize: Dimensions.get('window').width / 24,
               }}
               placeholder="Sex"
               placeholderStyle={{
@@ -76,6 +79,7 @@ export default function PatientInfo ( {route, navigation} ) {
            <Button
                title="Next"
                color='#b1d8b7'
+               style={styles.button}
                onPress={() => {
                    console.log(sex);
                     navigation.navigate('SymptomsScreen', {key: key, date: date, age: age, sex: sex, region: region});
@@ -105,11 +109,16 @@ const styles = StyleSheet.create({
        padding: Dimensions.get('window').width / 40,
        fontSize: Dimensions.get('window').width / 24,
        margin: Dimensions.get('window').width / 40,
+       position: "relative",
+       zIndex: 5
    },
    button: {
        backgroundColor: "#7094E0",
        textAlign: "center",
-       justifyContent: "center"
+       justifyContent: "center",
+       position: "relative",
+       zIndex: 1,
+       elevation: 1
    }
 })
  

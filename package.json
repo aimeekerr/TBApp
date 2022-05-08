@@ -9,6 +9,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-community/netinfo": "^8.3.0",
     "@react-navigation/native": "^6.0.8",
     "@react-navigation/native-stack": "^6.5.0",
     "buffer": "^6.0.3",
@@ -31,6 +32,7 @@
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "~3.10.1",
     "react-native-web": "0.17.1",
+    "redux-offline": "^2.0.0",
     "redux-persist": "^6.0.0",
     "rn-fetch-blob": "^0.12.0"
   },
