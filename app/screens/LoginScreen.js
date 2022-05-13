@@ -37,6 +37,10 @@ export default function LoginScreen( {navigation} ) {
         }
     };
 
+    const nextButton = () => {
+        navigation.navigate('VolunteerScreen', {key: "key", date: "date"})
+    }
+
 
     const getInfo = async (idToken) => {
         const request = {
@@ -104,6 +108,11 @@ export default function LoginScreen( {navigation} ) {
                 />
                 </View>
                 <View>
+                    <Button
+                        onPress={nextButton}
+                        title="Next"
+                        color="black">
+                    </Button>
                     <Button
                         onPress={signOut}
                         title="Log Out"
