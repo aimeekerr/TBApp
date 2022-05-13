@@ -98,21 +98,23 @@ export default function LoginScreen( {navigation} ) {
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
                 <Text style={styles.text}>Hello Volunteer, Login to begin!</Text>
             </View>
-            <View style={styles.loginButtonView}>
+            <View style={styles.buttonView}>
                 <View>
                 <GoogleSigninButton
-                    style={styles.googleButton}
+                    style={styles.mbutton}
                     size={GoogleSigninButton.Size.Wide}
                     color={GoogleSigninButton.Color.Light}
                     onPress={signIn}
                 />
                 </View>
-                <View>
+                <View style={styles.mbutton}> 
                     <Button
                         onPress={nextButton}
                         title="Next"
                         color="black">
                     </Button>
+                </View>
+                <View style={styles.mbutton}>
                     <Button
                         onPress={signOut}
                         title="Log Out"
@@ -151,8 +153,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
-    googleButton: {
-        alignSelf: "center"
+    midbutton: {
+        alignSelf: "center",
+        // marginBottom: Dimensions.get('window').height / 20,
+        marginBottom: 20,
+        height: 90,
+        width: 90,
     },
     logo: {
         width: Dimensions.get('window').width / 2,
@@ -188,6 +194,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5
+      },
+      buttonView: {
+        position: "absolute",
+        top: "55%",
+      },
+      mbutton: {
+        width: Dimensions.get('window').width / 1.5,
+        margin: Dimensions.get('window').height / 50,
       },
       button: {
         borderRadius: 20,

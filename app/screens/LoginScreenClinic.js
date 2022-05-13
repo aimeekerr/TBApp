@@ -67,6 +67,10 @@ export default function LoginScreenClinic( {navigation} ) {
         }
     }
 
+    const nextButton = () => {
+        navigation.navigate('ClinicScreen', {key: "key", date: "date"})
+    }
+
     const signOut = async () => {
         try {
             await GoogleSignin.revokeAccess();
@@ -94,16 +98,24 @@ export default function LoginScreenClinic( {navigation} ) {
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
                 <Text style={styles.text}>Hello Clinic, Login to begin!</Text>
             </View>
-            <View style={styles.loginButtonView}>
+            <View style={styles.buttonView}>
                 <View>
                 <GoogleSigninButton
-                    style={styles.googleButton}
+                    style={styles.mbutton}
                     size={GoogleSigninButton.Size.Wide}
                     color={GoogleSigninButton.Color.Light}
                     onPress={signIn}
                 />
                 </View>
-                <View>
+                <View style={styles.mbutton}>
+                    <Button
+                        onPress={nextButton}
+                        title="Next"
+                        color="black">
+                        style={styles.button}
+                    </Button>
+                </View>
+                <View style={styles.mbutton}>
                     <Button
                         onPress={signOut}
                         title="Log Out"
@@ -179,6 +191,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5
+      },
+      buttonView: {
+        position: "absolute",
+        top: "55%",
+      },
+      mbutton: {
+        width: Dimensions.get('window').width / 1.5,
+        margin: Dimensions.get('window').height / 50,
       },
       button: {
         borderRadius: 20,

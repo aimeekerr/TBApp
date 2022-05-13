@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useCallback } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, Alert, ImageBackground, Dimensions } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, Modal, Pressable, ScrollView, Alert, ImageBackground, Dimensions } from 'react-native';
 import AudioRecorderPlayer, {
     AVEncoderAudioQualityIOSType,
     AVEncodingOption,
@@ -281,6 +281,7 @@ export default function UploadCough( {route, navigation} ) {
     };
 
     return (
+      <ScrollView>
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
         <View>
             <Text style={styles.text}>
@@ -433,6 +434,7 @@ export default function UploadCough( {route, navigation} ) {
             </Modal>
         </View>
         </ImageBackground>
+      </ScrollView>
     )
 }
 
