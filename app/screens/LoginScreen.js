@@ -87,6 +87,8 @@ export default function LoginScreen( {navigation} ) {
         GoogleSignin.configure({
           scopes: ['profile', 'email'], // what API you want to access on behalf of the user, default is email and profile
           webClientId: '382563850622-mlmd0etlerlhivr31sdcuqq3ccdfg2dk.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+          androidClientId:
+            '382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com',
         });
     }, []);*/
 
