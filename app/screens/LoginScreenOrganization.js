@@ -1,20 +1,19 @@
 import { React, useState, useEffect } from 'react';
-import { ImageBackground, View, StyleSheet, Image, Text, Modal, Pressable, Alert, Button, Dimensions } from 'react-native';
-import {
+import { ImageBackground, View, StyleSheet, Image, Text, Button, Modal, Pressable, Alert, Dimensions } from 'react-native';
+/*import {
     GoogleSignin,
     GoogleSigninButton,
     statusCodes,
-} from '@react-native-google-signin/google-signin';
+} from '@react-native-google-signin/google-signin';*/
 
-
-export default function LoginScreenOrganization( {navigation} ) {
-    // adding google authentication here
-    const [loggedIn, setloggedIn] = useState(false);
-    const [userInfo, setuserInfo] = useState([]);
+export default function LoginScreen( {navigation} ) {
+    //const [loggedIn, setloggedIn] = useState(false);
+    //const [userInfo, setuserInfo] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+
     let tokenId = "";
 
-    const signIn = async () => {
+    /*const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
             const { idToken } = await GoogleSignin.signIn();
@@ -36,10 +35,14 @@ export default function LoginScreenOrganization( {navigation} ) {
                 console.log(error);
             }
         }
-    };
+    };*/
+
+    const nextButton = () => {
+        navigation.navigate('OrganizationScreen', {key: "key", date: "date"})
+    }
 
 
-    const getInfo = async (idToken) => {
+    /*const getInfo = async (idToken) => {
         const request = {
             method: 'PUT',
             headers: {
@@ -51,13 +54,13 @@ export default function LoginScreenOrganization( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            let response_list = await fetch('http://13.59.212.26/auth/appdb/org', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
+            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
             console.log(response_list)
             if(response_list != null)
             {
                 let key = response_list[0];
                 let date = response_list[1];
-                navigation.navigate('OrganizationScreen', {key: key, date: date});
+                navigation.navigate('VolunteerScreen', {key: key, date: date});
             }
             else
             {
@@ -65,14 +68,10 @@ export default function LoginScreenOrganization( {navigation} ) {
             }
         } catch (error) {
             console.error("The error is", error);
-        } 
-    } 
+        }
+    }*/
 
-    const nextButton = () => {
-        navigation.navigate('OrganizationScreen', {key: "key", date: "date"})
-    }
-
-    const signOut = async () => {
+    /*const signOut = async () => {
         try {
             await GoogleSignin.revokeAccess();
             await GoogleSignin.signOut();
@@ -82,55 +81,52 @@ export default function LoginScreenOrganization( {navigation} ) {
         } catch (error) {
             console.error(error);
         }
-    };
+    };*/
       
-    useEffect(() => {
+    /*useEffect(() => {
         GoogleSignin.configure({
           scopes: ['profile', 'email'], // what API you want to access on behalf of the user, default is email and profile
           webClientId: '382563850622-mlmd0etlerlhivr31sdcuqq3ccdfg2dk.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
-          androidClientId:
-            '382563850622-c3q3n26o8mi017qieq7ng9ifdrqivb1o.apps.googleusercontent.com',
         });
-    }, []); 
+    }, []);*/
 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.top}>
                 <Image style={styles.logo} source={require("../assets/icon.png")} />
-                <Text style={styles.text}>Hello Organization, Login to begin!</Text>
+                <Text style={styles.text}>Hello Organization, let's begin!</Text>
             </View>
             <View style={styles.buttonView}>
-                <View >
+                {/* <View>
                 <GoogleSigninButton
                     style={styles.mbutton}
                     size={GoogleSigninButton.Size.Wide}
                     color={GoogleSigninButton.Color.Light}
                     onPress={signIn}
                 />
-                </View>
-                <View style={styles.mbutton}>
+                </View> */}
+                <View style={styles.mbutton}> 
                     <Button
                         onPress={nextButton}
-                        title="Next"
-                        color="black">
-                        style={styles.button}
+                        title="Begin"
+                        color="#b1d8b7">
                     </Button>
                 </View>
-                <View style={styles.mbutton}>
+                {/* <View style={styles.mbutton}>
                     <Button
                         onPress={signOut}
                         title="Log Out"
                         color="red">
                     </Button>
-                </View>
+                </View> */}
             </View>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    setModalVisible(!modalVisible);
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setModalVisible(!modalVisible);
                 }}
                 >
                     <View style={styles.centeredView}>
@@ -155,8 +151,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
-    googleButton: {
-        alignSelf: "center"
+    midbutton: {
+        alignSelf: "center",
+        // marginBottom: Dimensions.get('window').height / 20,
+        marginBottom: 20,
+        height: 90,
+        width: 90,
     },
     logo: {
         width: Dimensions.get('window').width / 2,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     },
     top: {
         position: "absolute",
-        top: Dimensions.get('window').height / 20,
+        top: Dimensions.get('window').height / 12,
         alignItems: "center",
     },
     text: {
@@ -179,10 +179,10 @@ const styles = StyleSheet.create({
         marginTop: Dimensions.get('window').height / 22
       },
     modalView: {
-        margin: 20,
+        margin: Dimensions.get('window').height / 20,
         backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
+        borderRadius: Dimensions.get('window').height / 20,
+        padding: Dimensions.get('window').height / 35,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
         top: "55%",
       },
       mbutton: {
-        width: Dimensions.get('window').width / 1.5,
+        width: Dimensions.get('window').width / 2,
         margin: Dimensions.get('window').height / 50,
       },
       button: {
@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
         textAlign: "center"
       },
       modalText: {
-        marginBottom: 15,
+        marginBottom: Dimensions.get('window').height / 15,
         textAlign: "center"
       },
       recorderText: {
         fontWeight: 'bold',
         textAlign: "center"
-      }
+      },
 })
