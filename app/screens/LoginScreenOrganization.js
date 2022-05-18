@@ -1,19 +1,19 @@
 import { React, useState, useEffect } from 'react';
 import { ImageBackground, View, StyleSheet, Image, Text, Button, Modal, Pressable, Alert, Dimensions } from 'react-native';
-/*import {
+import {
     GoogleSignin,
     GoogleSigninButton,
     statusCodes,
-} from '@react-native-google-signin/google-signin';*/
+} from '@react-native-google-signin/google-signin';
 
 export default function LoginScreen( {navigation} ) {
-    //const [loggedIn, setloggedIn] = useState(false);
-    //const [userInfo, setuserInfo] = useState([]);
+    const [loggedIn, setloggedIn] = useState(false);
+    const [userInfo, setuserInfo] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
 
     let tokenId = "";
 
-    /*const signIn = async () => {
+    const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
             const { idToken } = await GoogleSignin.signIn();
@@ -35,14 +35,10 @@ export default function LoginScreen( {navigation} ) {
                 console.log(error);
             }
         }
-    };*/
-
-    const nextButton = () => {
-        navigation.navigate('OrganizationScreen', {key: "key", date: "date"})
-    }
+    };
 
 
-    /*const getInfo = async (idToken) => {
+    const getInfo = async (idToken) => {
         const request = {
             method: 'PUT',
             headers: {
@@ -69,9 +65,9 @@ export default function LoginScreen( {navigation} ) {
         } catch (error) {
             console.error("The error is", error);
         }
-    }*/
+    }
 
-    /*const signOut = async () => {
+    const signOut = async () => {
         try {
             await GoogleSignin.revokeAccess();
             await GoogleSignin.signOut();
@@ -81,14 +77,14 @@ export default function LoginScreen( {navigation} ) {
         } catch (error) {
             console.error(error);
         }
-    };*/
+    };
       
-    /*useEffect(() => {
+    useEffect(() => {
         GoogleSignin.configure({
           scopes: ['profile', 'email'], // what API you want to access on behalf of the user, default is email and profile
           webClientId: '382563850622-mlmd0etlerlhivr31sdcuqq3ccdfg2dk.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
         });
-    }, []);*/
+    }, []);
 
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
@@ -97,28 +93,21 @@ export default function LoginScreen( {navigation} ) {
                 <Text style={styles.text}>Hello Organization, let's begin!</Text>
             </View>
             <View style={styles.buttonView}>
-                {/* <View>
+                <View>
                 <GoogleSigninButton
                     style={styles.mbutton}
                     size={GoogleSigninButton.Size.Wide}
                     color={GoogleSigninButton.Color.Light}
                     onPress={signIn}
                 />
-                </View> */}
-                <View style={styles.mbutton}> 
-                    <Button
-                        onPress={nextButton}
-                        title="Begin"
-                        color="#b1d8b7">
-                    </Button>
                 </View>
-                {/* <View style={styles.mbutton}>
+                <View style={styles.mbutton}>
                     <Button
                         onPress={signOut}
                         title="Log Out"
                         color="red">
                     </Button>
-                </View> */}
+                </View>
             </View>
             <Modal
                 animationType="slide"
