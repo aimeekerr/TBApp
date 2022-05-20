@@ -9,7 +9,8 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import { PermissionsAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import { readFile, copyFile, TemporaryDirectoryPath } from "react-native-fs";
+import NetInfo from "@react-native-community/netinfo";
+import { readFile, copyFile, TemporaryDirectoryPath, readDir, writeFile, unlink, DocumentDirectoryPath } from "react-native-fs";
 import AudioRecord from 'react-native-audio-record';
 import { Buffer } from 'buffer';
 import Checkbox from 'expo-checkbox';
@@ -80,6 +81,194 @@ export default function UploadCough( {route, navigation} ) {
       body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
     };
 
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    // -:- START -:- OFFLINE MODE CODE -:- START -:-
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Author: Jordan Randleman -- offline.js
+    //   => Demos the use of potential code to support offline mode
+
+    //////////////////////////////////////////////////////////////////////////////
+    // RESOURCES FOR FILESYSTEM LIBRARY
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Repo:           github.com/itinance/react-native-fs
+    // How to install: github.com/itinance/react-native-fs#usage-iosmacos
+    // How to use:     github.com/itinance/react-native-fs#examples
+
+    //////////////////////////////////////////////////////////////////////////////
+    // APPROACH
+    //////////////////////////////////////////////////////////////////////////////
+
+    /*
+
+    Upon hitting the app's "submit" button, one of 2 things happens:
+
+      1) We're online. The sample is sent to the DB, along with all buffered samples.
+      2) We're offline. The sample is buffered.
+
+    Buffered samples are stores as files on Android tablet. These files have a 
+    prefix (the `OFFLINE_COUGH_FILE_PREFIX` constant below) followed by a number 
+    suffix to differentiate them.
+
+      * Note this implies that adding a new buffered file requires us to check the 
+        largest file number suffix in order to buffer our new file with a novel 
+        number (e.g. if last file has suffix N, our new one has suffix N+1).
+
+      * Further note that "sample" here refers to the stringified JSON put requests,
+        to simplify their storage and retrieval (just send what you get as the body 
+        of the request without further processing).
+
+    */
+
+    //////////////////////////////////////////////////////////////////////////////
+    // GLOBALS
+    //////////////////////////////////////////////////////////////////////////////
+
+    const OFFLINE_COUGH_FILE_PREFIX = 'ekifuba_offline_cough_file_';
+
+    //////////////////////////////////////////////////////////////////////////////
+    // HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Return whether <filename> string is one of our buffered cough files
+    function isCoughFile(filename) {
+      return filename.includes(OFFLINE_COUGH_FILE_PREFIX);
+    }
+
+
+    // Get the cough file's number suffix
+    function getCoughFileNumber(filename) {
+      return parseInt(filename.substring(filename.indexOf(OFFLINE_COUGH_FILE_PREFIX)+OFFLINE_COUGH_FILE_PREFIX.length));
+    }
+
+
+    // Get the next file number suffix
+    function getNextCoughFileNumber(coughFiles) {
+      let max = -Infinity;
+      for(coughFile of coughFiles) {
+        const coughFileNumber = getCoughFileNumber(coughFile);
+        if(coughFileNumber > max) {
+          max = coughFileNumber;
+        }
+      }
+      if(max == -Infinity) return 0;
+      return max+1;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // CHECK IF ONLINE
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Return an "are we online" boolean PROMISE
+    function appIsOnline() {
+      console.info(`\n\n]=> appIsOnline START\n\n`);
+      return new Promise((resolve, reject) => {
+        console.info(`\n\n]=> appIsOnline IN PROMISE\n\n`);
+        return NetInfo.fetch()
+          .then(response => {
+            console.info(`\n\n]=> appIsOnline GOT RESPONSE, response.isConnected=${response.isConnected}\n\n`);
+            return resolve(response.isConnected);
+          });
+      });
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // IF ONLINE => FLUSH
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Returns a PROMISE resolving to an array of all buffered cough file's content strings.
+    //   => NOTE: This also DELETES the files once they're read!
+    //   => NOTE: This promise will REJECT if an issue getting the underlying buffered files occurs
+    function flushBufferedCoughFiles() {
+      return new Promise((resolve, reject) => {
+        // Get a list of files and directories in the "DocumentDirectoryPath" (predefined by `react-native-fs`)
+        console.info(`\n\n]=> ONLINE: About to read directory: ${DocumentDirectoryPath}\n\n`);
+        return readDir(DocumentDirectoryPath)
+          .then(directoryContents => {
+            console.info(`\n\n]=> ONLINE: Read the directory! Got ${directoryContents.length} contents!\n\n`);
+            // Read the Files' Contents
+            const directoryPaths = directoryContents.map(c => c.path);
+            const coughFilePaths = directoryPaths.filter(isCoughFile);
+            const contentPromises = coughFilePaths.map(p => readFile(p,'utf8'));
+            contentPromises.push(coughFilePaths); // save the paths for deletion after reading
+            console.info(`\n\n]=> ONLINE: Reading the files in the directory!\n\n`);
+            return Promise.all(contentPromises);
+          })
+          .then(contents => {
+            console.info(`\n\n]=> ONLINE: Read the ${contents.lenghth} files!\n\n`);
+            // Delete the Files after Reading
+            const coughFilePaths = contents.pop();
+            const deletePromises = coughFilePaths.map(unlink);
+            deletePromises.push(contents); // save the contents for returning after deleting
+            console.info(`\n\n]=> ONLINE: Deleting the files!\n\n`);
+            return Promise.all(deletePromises);
+          })
+          .then(contents => {
+            console.info(`\n\n]=> ONLINE: Deleted the files!\n\n`);
+            return resolve(contents.pop()); // return the array of read file contents
+          })
+          .catch(err => reject(err));
+      });
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // IF OFFLINE => BUFFER SAMPLE
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Returns a PROMISE that resolves to "null" if succeeded writing, or an error
+    //   message if failed writing.
+    function bufferCoughFile(putRequestJsonBodyString) {
+      return new Promise((resolve, reject) => {
+        // Get a list of files and directories in the "DocumentDirectoryPath" (predefined by `react-native-fs`)
+        console.info(`\n\n]=> OFFLINE: About to read directory: ${DocumentDirectoryPath}\n\n`);
+        return readDir(DocumentDirectoryPath)
+          .then(directoryContents => {
+            // Read the Files' Contents
+            const directoryPaths = directoryContents.map(c => c.path);
+            const coughFilePaths = directoryPaths.filter(isCoughFile);
+            const nextCoughFileNumber = getNextCoughFileNumber(coughFilePaths);
+            const newCoughFilePath = DocumentDirectoryPath + '/' + OFFLINE_COUGH_FILE_PREFIX + nextCoughFileNumber;
+            console.info(`\n\n]=> OFFLINE: About to buffer filename: ${newCoughFilePath}\n\n`);
+            return writeFile(newCoughFilePath, putRequestJsonBodyString, 'utf8')
+              .then(() => {
+                console.info(`\n\n]=> OFFLINE: Buffered the filename: ${newCoughFilePath}\n\n`);
+                return resolve(null);
+              })
+              .catch(err => reject(err));
+          });
+      });
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    // -:- END -:- OFFLINE MODE CODE -:- END -:-
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+
+
     const print_var = () => {
       console.log("Variable is ", base64_encoded);
     }
@@ -122,7 +311,13 @@ export default function UploadCough( {route, navigation} ) {
           console.log(recordPathSelected);
           base64_encoded = (await readFile(actual_path, 'base64')).toString()
           print_var();
-          await fetch('http://13.59.212.26/db/appdb/med/users', {
+
+
+          ////////////////////////////////////////////////////////////////////
+          // -:- OFFLINE SUPPORT -:-
+          ////////////////////////////////////////////////////////////////////
+
+          const putData = {
             method: 'PUT',
             headers: {
                 "Content-Type": 'application/json',
@@ -133,7 +328,68 @@ export default function UploadCough( {route, navigation} ) {
               "file": base64_encoded
             },
             body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
-          }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+          };
+
+          appIsOnline()
+            .then(weAreOffline => {
+              if(weAreOffline) {
+                ////////////////////////////////////////////////////////////////
+                // ONLINE
+                ////////////////////////////////////////////////////////////////
+                console.info(`\n\n]=> ONLINE: START\n\n`);
+                fetch('http://13.59.212.26/db/appdb/med/users', putData)
+                  .then((response) => response.json())
+                  .then((myJson) => { 
+                    console.log(myJson); 
+                    flushBufferedCoughFiles()
+                      .then(contents => {
+                        console.info(`\n\n]=> ONLINE: Sending ${contents.length} buffered file contents!\n\n`);
+                        const objs = contents.map(JSON.parse);
+                        const fetchPromises = objs.map(o => fetch('http://13.59.212.26/db/appdb/med/users',o));
+                        console.info(`\n\n]=> ONLINE: Putting ${fetchPromises.length} files!\n\n`);
+                        Promise.all(fetchPromises)
+                          .then(() => {
+                            console.info(`\n\n]=> ONLINE: Put ${fetchPromises.length} files!\n\n`);
+                            return myJson;
+                          })
+                      })
+                      .catch(err => {
+                        console.log(`In Offline Mode: ERROR FLUSHING BUFFERED FILES: MESSAGE=${err.message}, CODE=${err.code}`);
+                      })
+                  });
+              } else {
+                ////////////////////////////////////////////////////////////////
+                // OFFLINE
+                ////////////////////////////////////////////////////////////////
+                console.info(`\n\n]=> OFFLINE: START\n\n`);
+                bufferCoughFile(JSON.stringify(putData))
+                  .then(() => {
+                    console.log(`In Offline Mode: Buffered a File!`);
+                  })
+                  .catch(err => {
+                    console.log(`In Offline Mode: ERROR BUFFERING A FILE: MESSAGE=${err.message}, CODE=${err.code}!`);
+                  })
+              }
+            });
+
+          ////////////////////////////////////////////////////////////////////
+          // -:- ORIGINAL VERSION (ONLY ONLINE) -:-
+          ////////////////////////////////////////////////////////////////////
+
+          // await fetch('http://13.59.212.26/db/appdb/med/users', {
+          //   method: 'PUT',
+          //   headers: {
+          //       "Content-Type": 'application/json',
+          //       "key": key, 
+          //       "date": date
+          //   },
+          //   files: {
+          //     "file": base64_encoded
+          //   },
+          //   body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+          // }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+
+          
       } catch (error) {
           console.error("The error is ", error);
       } finally {
