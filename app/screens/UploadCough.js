@@ -556,7 +556,13 @@ export default function UploadCough( {route, navigation} ) {
         console.log(recordPathSelected);
         base64_encoded = (await readFile(actual_path, 'base64')).toString()
         print_var();
-        await fetch('http://13.59.212.26/db/appdb/med/users', {
+
+
+        ////////////////////////////////////////////////////////////////////
+        // -:- OFFLINE SUPPORT -:-
+        ////////////////////////////////////////////////////////////////////
+
+        const putData = {
           method: 'PUT',
           headers: {
               "Content-Type": 'application/json',
@@ -567,10 +573,72 @@ export default function UploadCough( {route, navigation} ) {
             "file": base64_encoded
           },
           body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
-        }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+        };
+
+        appIsOnline()
+          .then(weAreOffline => {
+            if(weAreOffline) {
+              ////////////////////////////////////////////////////////////////
+              // ONLINE
+              ////////////////////////////////////////////////////////////////
+              console.info(`\n\n]=> ONLINE: START\n\n`);
+              fetch('http://13.59.212.26/db/appdb/med/users', putData)
+                .then((response) => response.json())
+                .then((myJson) => { 
+                  console.log(myJson); 
+                  flushBufferedCoughFiles()
+                    .then(contents => {
+                      console.info(`\n\n]=> ONLINE: Sending ${contents.length} buffered file contents!\n\n`);
+                      const objs = contents.map(JSON.parse);
+                      const fetchPromises = objs.map(o => fetch('http://13.59.212.26/db/appdb/med/users',o));
+                      console.info(`\n\n]=> ONLINE: Putting ${fetchPromises.length} files!\n\n`);
+                      Promise.all(fetchPromises)
+                        .then(() => {
+                          console.info(`\n\n]=> ONLINE: Put ${fetchPromises.length} files!\n\n`);
+                          return myJson;
+                        })
+                    })
+                    .catch(err => {
+                      console.log(`In Offline Mode: ERROR FLUSHING BUFFERED FILES: MESSAGE=${err.message}, CODE=${err.code}`);
+                    })
+                });
+            } else {
+              ////////////////////////////////////////////////////////////////
+              // OFFLINE
+              ////////////////////////////////////////////////////////////////
+              console.info(`\n\n]=> OFFLINE: START\n\n`);
+              bufferCoughFile(JSON.stringify(putData))
+                .then(() => {
+                  console.log(`In Offline Mode: Buffered a File!`);
+                })
+                .catch(err => {
+                  console.log(`In Offline Mode: ERROR BUFFERING A FILE: MESSAGE=${err.message}, CODE=${err.code}!`);
+                })
+            }
+          });
+
+        ////////////////////////////////////////////////////////////////////
+        // -:- ORIGINAL VERSION (ONLY ONLINE) -:-
+        ////////////////////////////////////////////////////////////////////
+
+        // await fetch('http://13.59.212.26/db/appdb/med/users', {
+        //   method: 'PUT',
+        //   headers: {
+        //       "Content-Type": 'application/json',
+        //       "key": key, 
+        //       "date": date
+        //   },
+        //   files: {
+        //     "file": base64_encoded
+        //   },
+        //   body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+        // }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+
+        
       } catch (error) {
           console.error("The error is ", error);
       } finally {
+          setConfirmationModalVisible(true);
           setModalVisible(true);
       }
     }
