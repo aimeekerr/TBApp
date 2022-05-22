@@ -10,7 +10,12 @@ export default function LoginScreen( {navigation} ) {
     const [loggedIn, setloggedIn] = useState(false);
     const [userInfo, setuserInfo] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [offlineModalVisible, setOfflineModalVisible] = useState(false);
+    const [key, setKey] = useState("");
+    const [date, setDate] = useState("");
 
+    // var key = "";
+    // var date = "";
     let tokenId = "";
 
     const signIn = async () => {
@@ -37,6 +42,13 @@ export default function LoginScreen( {navigation} ) {
         }
     };
 
+    const nav = () => {
+        setOfflineModalVisible(false);
+        navigation.navigate('VolunteerScreen', {key: key, date: date});
+        setKey("");
+        setDate("");
+    }
+
     const getInfo = async (idToken) => {
         const request = {
             method: 'PUT',
@@ -53,9 +65,11 @@ export default function LoginScreen( {navigation} ) {
             console.log(response_list)
             if(response_list != null)
             {
-                let key = response_list[0];
-                let date = response_list[1];
-                navigation.navigate('VolunteerScreen', {key: key, date: date});
+                setKey(response_list[0]);
+                setDate(response_list[1]);
+                setOfflineModalVisible(true);
+                // nav(key, date);
+                // navigation.navigate('VolunteerScreen', {key: key, date: date});
             }
             else
             {
@@ -113,6 +127,27 @@ export default function LoginScreen( {navigation} ) {
             <Modal
                 animationType="slide"
                 transparent={true}
+                visible={offlineModalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setOfflineModalVisible(!offlineModalVisible);
+                }}
+                >
+                    <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Make sure to not exit the app or go back to the login page!</Text>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={nav}
+                        >
+                        <Text style={styles.textStyle}>I understand</Text>
+                        </Pressable>
+                    </View>
+                    </View>
+                </Modal>
+            <Modal
+                animationType="slide"
+                transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
                 Alert.alert("Modal has been closed.");
@@ -140,13 +175,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         alignItems: 'center',
-    },
-    midbutton: {
-        alignSelf: "center",
-        // marginBottom: Dimensions.get('window').height / 20,
-        marginBottom: 20,
-        height: 90,
-        width: 90,
     },
     logo: {
         width: Dimensions.get('window').width / 2,

@@ -61,6 +61,8 @@ export default function UploadCough( {route, navigation} ) {
       playTime: '00:00:00',
       duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
+    const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+    const [audioModalVisible, setAudioModalVisible] = useState(false);
 
     // variable to hold the file response
     const [fileResponse, setFileResponse] = useState({});
@@ -137,11 +139,14 @@ export default function UploadCough( {route, navigation} ) {
       } catch (error) {
           console.error("The error is ", error);
       } finally {
+          setConfirmationModalVisible(true);
           setModalVisible(true);
       }
     }
 
-    const onStartRecord = async () => {
+    const startRecordingProcess = async () => {
+      setAudioModalVisible(false);
+    // const onStartRecord = async () => {
         if (Platform.OS === 'android') {
             try {
               const grants = await PermissionsAndroid.requestMultiple([
@@ -280,6 +285,40 @@ export default function UploadCough( {route, navigation} ) {
       }
     };
 
+    const dontSubmitInfo = () => {
+      setConfirmationModalVisible(false);
+    }
+
+    const submitInfo = async () => {
+      setConfirmationModalVisible(false);
+      try {
+        if(recordPathSelected) {
+          var actual_path = path;
+        } else {
+          var actual_path = uploadedAudioUri;
+        }
+        console.log(recordPathSelected);
+        base64_encoded = (await readFile(actual_path, 'base64')).toString()
+        print_var();
+        await fetch('http://13.59.212.26/db/appdb/med/users', {
+          method: 'PUT',
+          headers: {
+              "Content-Type": 'application/json',
+              "key": key, 
+              "date": date
+          },
+          files: {
+            "file": base64_encoded
+          },
+          body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+        }).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; });
+      } catch (error) {
+          console.error("The error is ", error);
+      } finally {
+          setModalVisible(true);
+      }
+    }
+
     return (
       <ScrollView>
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
@@ -306,7 +345,7 @@ export default function UploadCough( {route, navigation} ) {
             <Button
                title="Start Recording"
                color="#b1d8b7"
-               onPress={onStartRecord}
+               onPress={() => setAudioModalVisible(true) }
             />
             <Button
                title="Stop Recording"
@@ -407,10 +446,69 @@ export default function UploadCough( {route, navigation} ) {
             <Button
                title="Submit"
                color="#b1d8b7"
-               onPress={postData}
+               onPress={() => setConfirmationModalVisible(true)}
                style={styles.submitButton}
                zIndex={5}
             />
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={audioModalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setAudioModalVisible(!audioModalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Make sure to record audio in a quiet setting with no background noise!</Text>
+                    <Pressable
+                        style={[styles.button, styles.buttonClose]}
+                        onPress={startRecordingProcess}
+                    >
+                    <Text style={styles.textStyle} >I understand</Text>
+                    </Pressable>
+                </View>
+                </View>
+            </Modal>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={confirmationModalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setConfirmationModalVisible(!confirmationModalVisible);
+                }}
+                >
+                    <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>
+                          Are you sure you want to submit the form with the following information:
+                          {"\n"}Age: {age}
+                          {"\n"}Sex: {sex}
+                          {"\n"}Region: {region}
+                          {"\n"}Coughing Blood: {bool_symptoms[0].toString()}
+                          {"\n"}Chest Pain: {bool_symptoms[1].toString()}
+                          {"\n"}Fatigue: {bool_symptoms[2].toString()}
+                          {"\n"}Fever: {bool_symptoms[3].toString()}
+                          {"\n"}Pain With Breathing: {bool_symptoms[4].toString()}
+                          {"\n"}Does The Patient Have Tuberculosis: {tuberculosis.toString()}
+                        </Text>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={dontSubmitInfo}
+                        >
+                        <Text style={styles.textStyle}>No, go back</Text>
+                        </Pressable>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={submitInfo}
+                        >
+                        <Text style={styles.textStyle}>Yes, submit this information</Text>
+                        </Pressable>
+                    </View>
+                    </View>
+            </Modal>
             <Modal
                 animationType="slide"
                 transparent={true}

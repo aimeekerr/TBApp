@@ -4,11 +4,19 @@ import { ImageBackground, View, StyleSheet, Image, Text, Button, Dimensions } fr
 export default function VolunteerScreen( {route, navigation} ) {
     var key = route.params.key;
     var date = route.params.date;
+
+    const submitRequests = () => {
+        console.log('Jordan code to submit remaining requests');
+    }
+
     return (
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
             <View style={styles.buttonView}>
-                <View style={styles.buttons}>
-                    <Button color="#b1d8b7" title="Add Patient Data" onPress={() => navigation.navigate('PatientInfo', {key: key, date: date})}></Button>
+                <View style={styles.mbutton}>
+                    <Button color="#b1d8b7"  title="Add Patient Data" onPress={() => navigation.navigate('PatientInfo', {key: key, date: date})}></Button>
+                </View>
+                <View style={styles.mbutton}>
+                    <Button color="#b1d8b7" title="Submit Remaining Requests" onPress={submitRequests}></Button>
                 </View>
             </View>
         </ImageBackground>
@@ -26,5 +34,9 @@ const styles = StyleSheet.create({
     },
     buttonView: {
         top: "30%",
+    },
+    mbutton: {
+        width: Dimensions.get('window').width / 2,
+        margin: Dimensions.get('window').height / 50,
     },
 })

@@ -128,7 +128,7 @@ export default function LoginScreen( {navigation} ) {
                         </Pressable>
                     </View>
                     </View>
-                </Modal>
+            </Modal>
         </ImageBackground>
     );
 }
