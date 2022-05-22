@@ -50,13 +50,13 @@ export default function LoginScreen( {navigation} ) {
         };
         try {
             console.log("token id value:", idToken);
-            let response_list = await fetch('http://13.59.212.26/auth/appdb/med', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
+            let response_list = await fetch('http://13.59.212.26/auth/appdb/org', request).then((response) => { return response.json(); }).then((myJson) => { console.log(myJson); return myJson; })
             console.log(response_list)
             if(response_list != null)
             {
                 let key = response_list[0];
                 let date = response_list[1];
-                navigation.navigate('VolunteerScreen', {key: key, date: date});
+                navigation.navigate('OrganizationScreen', {key: key, date: date});
             }
             else
             {
