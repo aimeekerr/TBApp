@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './LoginScreen';
 import PatientInfo from './PatientInfo';
 import SymptomsScreen from './SymptomsScreen';
-import UploadCough from './UploadCough';
+import { UploadCough } from './UploadCough';
 import VolunteerScreen from './VolunteerScreen';
 import LoginScreenClinic from './LoginScreenClinic';
 import LoginScreenOrganization from './LoginScreenOrganization';
