@@ -21,6 +21,8 @@ const audioRecorderPlayer = new AudioRecorderPlayer();
 
 let base64_encoded = "";
 
+const OFFLINE_COUGH_FILE_PREFIX = 'ekifuba_offline_cough_file_';
+
 // Return a promise that resolves once all of the buffered files have been 
 //   read, sent to the DB, and deleted from the local Android system.
 export function sendBufferedCoughFiles() {
@@ -44,53 +46,14 @@ export function sendBufferedCoughFiles() {
   });
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// IF OFFLINE => BUFFER SAMPLE
-//////////////////////////////////////////////////////////////////////////////
-
-// Returns a PROMISE that resolves to "null" if succeeded writing, or an error
-//   message if failed writing.
-export function bufferCoughFile(putRequestJsonBodyString) {
-  return new Promise((resolve, reject) => {
-    // Get a list of files and directories in the "DocumentDirectoryPath" (predefined by `react-native-fs`)
-    console.info(`\n\n]=> OFFLINE: About to read directory: ${DocumentDirectoryPath}\n\n`);
-    return readDir(DocumentDirectoryPath)
-      .then(directoryContents => {
-        // Read the Files' Contents
-        const directoryPaths = directoryContents.map(c => c.path);
-        const coughFilePaths = directoryPaths.filter(isCoughFile);
-        const nextCoughFileNumber = getNextCoughFileNumber(coughFilePaths);
-        const newCoughFilePath = DocumentDirectoryPath + '/' + OFFLINE_COUGH_FILE_PREFIX + nextCoughFileNumber;
-        console.info(`\n\n]=> OFFLINE: About to buffer filename: ${newCoughFilePath}\n\n`);
-        return writeFile(newCoughFilePath, putRequestJsonBodyString, 'utf8')
-          .then(() => {
-            console.info(`\n\n]=> OFFLINE: Buffered the filename: ${newCoughFilePath}\n\n`);
-            return resolve(null);
-          })
-          .catch(err => reject(err));
-      });
-  });
+// Return whether <filename> string is one of our buffered cough files
+export function isCoughFile(filename) {
+  return filename.includes(OFFLINE_COUGH_FILE_PREFIX);
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// IF ONLINE => FLUSH
 //////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-// -:- END -:- OFFLINE MODE CODE -:- END -:-
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////////
-    // IF ONLINE => FLUSH
-    //////////////////////////////////////////////////////////////////////////////
 
 // Returns a PROMISE resolving to an array of all buffered cough file's content strings.
 //   => NOTE: This also DELETES the files once they're read!
@@ -126,6 +89,22 @@ export function getBufferedCoughFiles() {
       .catch(err => reject(err));
   });
 }
+
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+// -:- END -:- OFFLINE MODE CODE -:- END -:-
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 export function UploadCough( {route, navigation} ) {
     // retrieve and save variables from previous pages
@@ -168,6 +147,8 @@ export function UploadCough( {route, navigation} ) {
       playTime: '00:00:00',
       duration: '00:00:00',});
     const [modalVisible, setModalVisible] = useState(false);
+    const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+    const [audioModalVisible, setAudioModalVisible] = useState(false);
 
     // variable to hold the file response
     const [fileResponse, setFileResponse] = useState({});
@@ -243,17 +224,9 @@ export function UploadCough( {route, navigation} ) {
     // GLOBALS
     //////////////////////////////////////////////////////////////////////////////
 
-    const OFFLINE_COUGH_FILE_PREFIX = 'ekifuba_offline_cough_file_';
-
     //////////////////////////////////////////////////////////////////////////////
     // HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////////////////////
-
-    // Return whether <filename> string is one of our buffered cough files
-    function isCoughFile(filename) {
-      return filename.includes(OFFLINE_COUGH_FILE_PREFIX);
-    }
-
 
     // Get the cough file's number suffix
     function getCoughFileNumber(filename) {
@@ -271,6 +244,34 @@ export function UploadCough( {route, navigation} ) {
         }
       }
       return max+1;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // IF OFFLINE => BUFFER SAMPLE
+    //////////////////////////////////////////////////////////////////////////////
+
+    // Returns a PROMISE that resolves to "null" if succeeded writing, or an error
+    //   message if failed writing.
+    function bufferCoughFile(putRequestJsonBodyString) {
+      return new Promise((resolve, reject) => {
+        // Get a list of files and directories in the "DocumentDirectoryPath" (predefined by `react-native-fs`)
+        console.info(`\n\n]=> OFFLINE: About to read directory: ${DocumentDirectoryPath}\n\n`);
+        return readDir(DocumentDirectoryPath)
+          .then(directoryContents => {
+            // Read the Files' Contents
+            const directoryPaths = directoryContents.map(c => c.path);
+            const coughFilePaths = directoryPaths.filter(isCoughFile);
+            const nextCoughFileNumber = getNextCoughFileNumber(coughFilePaths);
+            const newCoughFilePath = DocumentDirectoryPath + '/' + OFFLINE_COUGH_FILE_PREFIX + nextCoughFileNumber;
+            console.info(`\n\n]=> OFFLINE: About to buffer filename: ${newCoughFilePath}\n\n`);
+            return writeFile(newCoughFilePath, putRequestJsonBodyString, 'utf8')
+              .then(() => {
+                console.info(`\n\n]=> OFFLINE: Buffered the filename: ${newCoughFilePath}\n\n`);
+                return resolve(null);
+              })
+              .catch(err => reject(err));
+          });
+      });
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -394,13 +395,15 @@ export function UploadCough( {route, navigation} ) {
 
           
       } catch (error) {
-          console.error("The error is ", error);
+        console.error("The error is ", error);
       } finally {
-          setModalVisible(true);
+        setConfirmationModalVisible(true);
+        setModalVisible(true);
       }
     }
 
-    const onStartRecord = async () => {
+    const startRecordingProcess = async () => {
+        setAudioModalVisible(false);
         if (Platform.OS === 'android') {
             try {
               const grants = await PermissionsAndroid.requestMultiple([
@@ -539,6 +542,64 @@ export function UploadCough( {route, navigation} ) {
       }
     };
 
+    const dontSubmitInfo = () => {
+      setConfirmationModalVisible(false);
+    }
+
+    const submitInfo = async () => {
+      setConfirmationModalVisible(false);
+      try {
+        if(recordPathSelected) {
+          var actual_path = path;
+        } else {
+          var actual_path = uploadedAudioUri;
+        }
+        console.log(recordPathSelected);
+        base64_encoded = (await readFile(actual_path, 'base64')).toString()
+        print_var();
+        const putData = {
+          method: 'PUT',
+          headers: {
+              "Content-Type": 'application/json',
+              "key": key, 
+              "date": date
+          },
+          files: {
+            "file": base64_encoded
+          },
+          body: JSON.stringify({ age: age, sex: sex, region: region, symptoms: bool_symptoms.toString(), tb: tuberculosis.toString(), file: base64_encoded }),
+        };
+
+        appIsOnline()
+          .then(weAreOffline => {
+            if(weAreOffline) {
+              ////////////////////////////////////////////////////////////////
+              // ONLINE
+              ////////////////////////////////////////////////////////////////
+              console.info(`\n\n]=> ONLINE: START\n\n`);
+              fetch('http://13.59.212.26/db/appdb/med/users', putData)
+                .then((response) => response.json())
+                .then((myJson) => { 
+                  console.log(myJson); 
+                  sendBufferedCoughFiles().then(() => myJson);
+                });
+            } else {
+              ////////////////////////////////////////////////////////////////
+              // OFFLINE
+              ////////////////////////////////////////////////////////////////
+              console.info(`\n\n]=> OFFLINE: START\n\n`);
+              bufferCoughFile(JSON.stringify(putData))
+                .then(() => console.log(`In Offline Mode: Buffered a File!`))
+                .catch(err => console.log(`In Offline Mode: ERROR BUFFERING A FILE: MESSAGE=${err.message}, CODE=${err.code}!`));
+            }
+          });
+      } catch (error) {
+        console.error("The error is ", error);
+      } finally {
+        setModalVisible(true);
+      }
+    }
+
     return (
       <ScrollView>
         <ImageBackground style={styles.background} source={require("../assets/background.png")}>
@@ -565,7 +626,7 @@ export function UploadCough( {route, navigation} ) {
             <Button
                title="Start Recording"
                color="#b1d8b7"
-               onPress={onStartRecord}
+               onPress={() => setAudioModalVisible(true)}
             />
             <Button
                title="Stop Recording"
@@ -666,10 +727,69 @@ export function UploadCough( {route, navigation} ) {
             <Button
                title="Submit"
                color="#b1d8b7"
-               onPress={postData}
+               onPress={() => setConfirmationModalVisible(true)}
                style={styles.submitButton}
                zIndex={5}
             />
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={audioModalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setAudioModalVisible(!audioModalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Make sure to record audio in a quiet setting with no background noise!</Text>
+                    <Pressable
+                        style={[styles.button, styles.buttonClose]}
+                        onPress={startRecordingProcess}
+                    >
+                    <Text style={styles.textStyle} >I understand</Text>
+                    </Pressable>
+                </View>
+                </View>
+            </Modal>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={confirmationModalVisible}
+                onRequestClose={() => {
+                Alert.alert("Modal has been closed.");
+                setConfirmationModalVisible(!confirmationModalVisible);
+                }}
+                >
+                    <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>
+                          Are you sure you want to submit the form with the following information:
+                          {"\n"}Age: {age}
+                          {"\n"}Sex: {sex}
+                          {"\n"}Region: {region}
+                          {"\n"}Coughing Blood: {bool_symptoms[0].toString()}
+                          {"\n"}Chest Pain: {bool_symptoms[1].toString()}
+                          {"\n"}Fatigue: {bool_symptoms[2].toString()}
+                          {"\n"}Fever: {bool_symptoms[3].toString()}
+                          {"\n"}Pain With Breathing: {bool_symptoms[4].toString()}
+                          {"\n"}Does The Patient Have Tuberculosis: {tuberculosis.toString()}
+                        </Text>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={dontSubmitInfo}
+                        >
+                        <Text style={styles.textStyle}>No, go back</Text>
+                        </Pressable>
+                        <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={submitInfo}
+                        >
+                        <Text style={styles.textStyle}>Yes, submit this information</Text>
+                        </Pressable>
+                    </View>
+                    </View>
+            </Modal>
             <Modal
                 animationType="slide"
                 transparent={true}
