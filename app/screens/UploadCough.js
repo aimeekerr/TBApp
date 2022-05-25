@@ -397,7 +397,6 @@ export function UploadCough( {route, navigation} ) {
       } catch (error) {
         console.error("The error is ", error);
       } finally {
-        setConfirmationModalVisible(true);
         setModalVisible(true);
       }
     }
